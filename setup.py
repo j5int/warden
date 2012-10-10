@@ -13,7 +13,7 @@ def get_version():
 
 setup(name             = 'warden',
       version          = get_version(),
-      license          =  'Python Software Foundation License',
+      license          =  'MIT',
       description      = 'A set of tools for monitoring Python applications, and shipping events to Sentry and metrics to Graphite',
       long_description = \
 """
@@ -34,7 +34,7 @@ Finally, there is an API that can be used by the monitored application to publis
       classifiers      = [
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: Python Software Foundation License',
+        'License :: OSI Approved :: MIT License',
         'Environment :: Web Environment',
         'Operating System :: Microsoft :: Windows',
         'Operating System :: POSIX',
