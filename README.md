@@ -1,4 +1,4 @@
-warden
+Warden
 ======
 
-Warden is a set of tools for monitoring Python applications, and shipping events to Sentry and metrics to Graphite
+Warden is a Python application, and an API, that can be used monitor other Python applications running locally, and ship events to a remote Sentry instance and metrics to remote Graphite instance.
