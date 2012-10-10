@@ -1,7 +1,7 @@
 Warden
 ======
 
-Warden is a Python application that can be used to monitor other Python applications running locally, and ship events to a Sentry instance and metrics to a Graphite instance.
+Warden is a Python application that monitors other Python applications running locally, and ships events to a Sentry instance and metrics to a Graphite instance.
 
 Warden can tail log files, watch that processes are running, ping an HTTP url, and track memory and CPU usage.
 
