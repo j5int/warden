@@ -7,14 +7,18 @@ import random
 
 from socket import socket
 from ConfigParser import ConfigParser
-import warden
-from warden import CarbonManager
+from warden_carbon import CarbonManager
 
 # Check dependencies
 try:
     import whisper
 except Exception as e:
     print('Missing required dependency: Whisper=0.9.10')
+    exit(1)
+try:
+    import carbon
+except Exception as e:
+    print('Missing required dependency: Carbon=0.9.10')
     exit(1)
 try:
     import twisted
@@ -63,8 +67,6 @@ class WardenCCTestCase(unittest.TestCase):
         cls.step = retentions[0]
         cls.max_datapoints = retentions[1]
 
-        print(retentions)
-
         time.sleep(2)
 
     def runTest(self):
@@ -98,10 +100,6 @@ class WardenCCTestCase(unittest.TestCase):
         sock.sendall(message)
         time.sleep(2) # NB - allows file operations to complete
 
-        print('data starts at: ' + str(data[0][0]))
-        print('current time is:' + str(time.time()))
-        print len(data)
-
         # check if data file was created
 
         tagFile = os.path.join(self.temp_dir, "storage","whisper","folder", tag + ".wsp")
@@ -109,7 +107,7 @@ class WardenCCTestCase(unittest.TestCase):
 
         # check if data files contain correct data
         # print(whisper.info(tagFile))
-        print 'from, until:', (now - self.step*(num_data_points), now)
+        # print 'from, until:', (now - self.step*(num_data_points), now)
         print(whisper.fetch(tagFile, now - self.step*(num_data_points), now))
         # The values passed to whisper.fetch for 'from' and 'to' are
         # rounded up to the next discrete time point. As a result, we subtract one step from them

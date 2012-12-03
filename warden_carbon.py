@@ -1,10 +1,6 @@
 import os
 import sys
-import time
-import psutil
-import string
 import threading
-from optparse import OptionParser
 
 # Check major dependencies
 try:
@@ -23,7 +19,7 @@ except Exception as e:
     print('Missing required dependency: Twisted=11.10.1')
     exit(1)
 
-from twisted.scripts.twistd import ServerOptions, runApp
+from twisted.scripts.twistd import ServerOptions
 from twisted.application import app, service, internet
 from twisted.python.runtime import platformType
 
@@ -33,10 +29,22 @@ if platformType == "win32":
 else:
     from twisted.scripts._twistd_unix import ServerOptions, UnixApplicationRunner as _SomeApplicationRunner
 
-# import and create reactor, this is also platform specific
 from twisted.internet import reactor
 
 class CarbonManager:
+    """
+    The main class for managing carbon daemons. A single reactor runs multiple
+    twisted applications (the carbon daemons).
+
+    Usage:
+        manager = CarbonManager(carbon_dir)
+        manager.start_daemon(CarbonManager.CACHE, optional_path_to_config_file)
+
+        # < do work here >
+
+        manager.stop_daemons()
+
+    """
 
     CACHE = 'carbon-cache'
     AGGREGATOR = 'carbon-aggregator'
@@ -53,6 +61,7 @@ class CarbonManager:
         os.makedirs(self.STORAGEDIR)
 
         self.active_threads = []
+
 
     def start_daemon(self, program, configfile=None):
         t = self.Carbonthread(program, os.path.join(self.BINDIR, program+'.py'), configfile)
@@ -82,15 +91,15 @@ class CarbonManager:
             if configfile != None:
                 twistd_options.append('--config='+configfile)
 
-            """
-            # Additional argument parsing, not sure if needed. I have a feeling twisted does not need a full file path
-            # if carbon is installed properly on the system. 'start' is also not needed when run in this threaded way.
-            from carbon.conf import get_parser
-            parser = get_parser(program)
-            # options are the specific wanted things, args are the leftovers that may be needed for twisted
-            (options, args) = parser.parse_args([filename, 'start'])
-            twistd_options.extend(args) # add leftovers
-            """
+
+#            # Additional argument parsing, not sure if needed. I have a feeling twisted does not need a full file path
+#            # if carbon is installed properly on the system. 'start' is also not needed when run in this threaded way.
+#            from carbon.conf import get_parser
+#            parser = get_parser(program)
+#            # options are the specific wanted things, args are the leftovers that may be needed for twisted
+#            (options, args) = parser.parse_args([filename, 'start'])
+#            twistd_options.extend(args) # add leftovers
+
 
             self.config = ServerOptions()
             self.config.parseOptions(twistd_options)
