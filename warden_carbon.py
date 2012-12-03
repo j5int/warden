@@ -38,7 +38,7 @@ class CarbonManager:
 
     Usage:
         manager = CarbonManager(carbon_dir)
-        manager.start_daemon(CarbonManager.CACHE, optional_path_to_config_file)
+        manager.add_daemon(CarbonManager.CACHE, optional_path_to_config_file)
 
         # < do work here >
 
@@ -58,67 +58,50 @@ class CarbonManager:
 
         self.GRAPHITEROOT = os.environ['GRAPHITE_ROOT']
         self.STORAGEDIR = os.path.join(self.GRAPHITEROOT, 'storage')
-        os.makedirs(self.STORAGEDIR)
+        if not os.path.exists(self.STORAGEDIR):
+            os.makedirs(self.STORAGEDIR)
 
-        self.active_threads = []
+        self.active_thread = None
 
 
-    def start_daemon(self, program, configfile=None):
-        t = self.Carbonthread(program, os.path.join(self.BINDIR, program+'.py'), configfile)
-        t.start()
-        self.active_threads.append(t)
+    def add_daemon(self, program, configfile=None):
 
-    def stop_daemons(self):
+        twistd_options = ["--no_save", "--nodaemon", program]
+
+        if configfile != None:
+            twistd_options.append('--config='+configfile)
+
+        self.config = ServerOptions()
+        self.config.parseOptions(twistd_options)
+
+        self.appRunner = _SomeApplicationRunner(self.config)
+        self.appRunner.preApplication()
+        self.appRunner.application = self.appRunner.createOrGetApplication()
+        service.IService(self.appRunner.application).services[0].startService()
+
+
+    def start_daemons(self):
+        self.active_thread = self.Carbonthread()
+        self.active_thread.start()
+
+    def stop_daemons(self, remove_pids=True):
         print('\nStopping reactor')
-        reactor.crash()
-        reactor.getThreadPool().stop()
-        reactor.disconnectAll()
+        self.active_thread.die()
 
-        nthread = len(self.active_threads)
-        for t in self.active_threads:
-            t.join()
+        if remove_pids:
 
-        print('Stopped %d daemons' % nthread)
+            pids = [os.path.join(self.STORAGEDIR, f) for f in os.listdir(self.STORAGEDIR) if f[-4:]=='.pid']
+
+            for pidfile in pids:
+                print('Removing old pidfile ' + pidfile)
+                os.remove(pidfile)
 
 
     class Carbonthread(threading.Thread):
 
-        def __init__(self, program, filename, configfile=None):
-            threading.Thread.__init__(self)
-
-            twistd_options = ["--no_save", "--nodaemon", program]
-
-            if configfile != None:
-                twistd_options.append('--config='+configfile)
-
-
-#            # Additional argument parsing, not sure if needed. I have a feeling twisted does not need a full file path
-#            # if carbon is installed properly on the system. 'start' is also not needed when run in this threaded way.
-#            from carbon.conf import get_parser
-#            parser = get_parser(program)
-#            # options are the specific wanted things, args are the leftovers that may be needed for twisted
-#            (options, args) = parser.parse_args([filename, 'start'])
-#            twistd_options.extend(args) # add leftovers
-
-
-            self.config = ServerOptions()
-            self.config.parseOptions(twistd_options)
-
         def run(self):
-            self.appRunner = _SomeApplicationRunner(self.config)
-            self.appRunner.preApplication()
-            self.appRunner.application = self.appRunner.createOrGetApplication()
+            reactor.run(False)
 
-            if platformType == "win32":
-                service.IService(self.appRunner.application).privilegedStartService()
-                app.startApplication(self.appRunner.application, not self.appRunner.config['no_save'])
-                app.startApplication(internet.TimerService(0.1, lambda:None), 0)
-            else:
-                self.appRunner.startApplication(self.appRunner.application)
-
-            try:
-                reactor.run(False)
-            except Exception as e:
-                print('Reactor has already started.')
-
+        def die(self):
+            reactor.stop()
 
