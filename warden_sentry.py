@@ -22,8 +22,24 @@ class SentryManager:
         self.st.fire_keyboard_int()
 
     class SentryThread(threading.Thread):
+
+        def __init__(self):
+
+            sys_args = sys.argv
+
+            runner_name = os.path.basename(sys_args[0])
+            print(runner_name)
+            #args, command, command_args = parse_args(sys_args[1:])
+
         def run(self):
-            #import pdb; pdb.set_trace()
+
+
+
+
+
+
+
+
             run_app(
                 project='sentry',
                 default_config_path='~/.sentry/sentry.conf.py',
