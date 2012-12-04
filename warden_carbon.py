@@ -92,8 +92,10 @@ class CarbonManager:
         self.reactor_thread.start()
 
     def stop_daemons(self, remove_pids=True):
-        print('\nStopping reactor')
+        print('\nStopping reactor..')
         self.reactor_thread.die()
+        self.reactor_thread.join()
+        print('Stopped')
 
         if remove_pids:
             pids = [os.path.join(self.STORAGEDIR, f) for f in os.listdir(self.STORAGEDIR) if f[-4:]=='.pid']
