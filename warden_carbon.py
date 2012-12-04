@@ -37,7 +37,7 @@ class CarbonManager:
     twisted applications (the carbon daemons). This is quite like Twistd
 
     Usage:
-        manager = CarbonManager(carbon_dir)
+        manager = CarbonManager(carbon_directory)
         manager.add_daemon(CarbonManager.CACHE, optional_path_to_config_file)
         manager.start_daemons()
 
@@ -51,7 +51,7 @@ class CarbonManager:
     RELAY = 'carbon-relay'
 
     def __init__(self, path_to_carbon):
-        self.PATHTOCARBON = path_to_carbon
+        self.PATHTOCARBON = path_to_carbon                              # this could be changed to point to site packages/carbon
         self.BINDIR = os.path.join(self.PATHTOCARBON, 'bin')
         self.LIBDIR = os.path.join(self.PATHTOCARBON, 'lib')
         sys.path.insert(0, self.LIBDIR)
