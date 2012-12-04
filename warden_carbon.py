@@ -67,6 +67,8 @@ class CarbonManager:
 
 
     def add_daemon(self, program, configfile=None):
+        if reactor.running:                                                     # this is just for sanity, it may be unnecessary
+            raise Exception('Cannot add daemon. Reactor is already running.')
 
         twistd_options = ["--no_save", "--nodaemon", program]
 
@@ -84,6 +86,8 @@ class CarbonManager:
         self.application_runners.append(appRunner)
 
     def start_daemons(self):
+        if reactor.running:
+            raise Exception('Reactor is already running.')
         self.reactor_thread = self.ReactorThread()
         self.reactor_thread.start()
 
@@ -98,6 +102,12 @@ class CarbonManager:
                 os.remove(pidfile)
 
     def print_status(self):
+        """
+        Prints the reactor status followed by a list of linked applications
+        and any ports or connections that are currently controlled by the
+        reactor.
+        """
+
         print('Reactor Status:')
 
         print('  Running: %s' % str(reactor.running))

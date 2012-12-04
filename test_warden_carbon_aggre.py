@@ -76,7 +76,7 @@ class WardenCarbonAggreTestCase(unittest.TestCase):
 
         # Create some sample data
         num_data_points = 4
-        num_substep = 10
+        num_substep = 20
 
         data = []
         lines = []
