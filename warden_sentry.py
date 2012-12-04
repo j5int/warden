@@ -19,7 +19,7 @@ class SentryManager:
         self.st.start()
 
     def stop_sentry(self):
-        self.st.die()
+        self.st.fire_keyboard_int()
 
     class SentryThread(threading.Thread):
         def run(self):
@@ -33,7 +33,7 @@ class SentryManager:
                 initializer=runner.initialize_app,
             )
 
-        def die(self):
+        def fire_keyboard_int(self):
             thread_async_raise(self, KeyboardInterrupt)
 
 def countdown(delay):
