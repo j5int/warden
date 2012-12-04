@@ -63,6 +63,8 @@ class WardenCarbonCacheTestCase(unittest.TestCase):
 
         time.sleep(2)
 
+        self.manager.print_status()
+
     def runTest(self):
 
         tag = 'random_data'
@@ -110,6 +112,8 @@ class WardenCarbonCacheTestCase(unittest.TestCase):
     @classmethod
     def tearDownClass(self):
         self.manager.stop_daemons()
+        time.sleep(1)
+        self.manager.print_status()
         print('done.')
 
 

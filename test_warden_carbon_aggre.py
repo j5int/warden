@@ -62,6 +62,8 @@ class WardenCarbonAggreTestCase(unittest.TestCase):
 
         time.sleep(2)
 
+        self.manager.print_status()
+
     def runTest(self):
 
         tag = 'random_data_cca'
@@ -136,6 +138,8 @@ class WardenCarbonAggreTestCase(unittest.TestCase):
     @classmethod
     def tearDownClass(self):
         self.manager.stop_daemons()
+        time.sleep(1)
+        self.manager.print_status()
         print('done.')
 
 

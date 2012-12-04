@@ -34,16 +34,16 @@ from twisted.internet import reactor
 class CarbonManager:
     """
     The main class for managing carbon daemons. A single reactor runs multiple
-    twisted applications (the carbon daemons).
+    twisted applications (the carbon daemons). This is quite like Twistd
 
     Usage:
         manager = CarbonManager(carbon_dir)
         manager.add_daemon(CarbonManager.CACHE, optional_path_to_config_file)
-
-        # < do work here >
+        manager.start_daemons()
 
         manager.stop_daemons()
 
+        manager.print_status() # to print the current status of the reactor and app runners
     """
 
     CACHE = 'carbon-cache'
@@ -61,7 +61,9 @@ class CarbonManager:
         if not os.path.exists(self.STORAGEDIR):
             os.makedirs(self.STORAGEDIR)
 
-        self.active_thread = None
+        self.reactor_thread = None
+
+        self.application_runners = []
 
 
     def add_daemon(self, program, configfile=None):
@@ -73,35 +75,62 @@ class CarbonManager:
 
         self.config = ServerOptions()
         self.config.parseOptions(twistd_options)
+        self.config['originalname'] = program
 
-        self.appRunner = _SomeApplicationRunner(self.config)
-        self.appRunner.preApplication()
-        self.appRunner.application = self.appRunner.createOrGetApplication()
-        service.IService(self.appRunner.application).services[0].startService()
-
+        appRunner = _SomeApplicationRunner(self.config)
+        appRunner.preApplication()
+        appRunner.application = appRunner.createOrGetApplication()
+        service.IService(appRunner.application).services[0].startService()
+        self.application_runners.append(appRunner)
 
     def start_daemons(self):
-        self.active_thread = self.Carbonthread()
-        self.active_thread.start()
+        self.reactor_thread = self.ReactorThread()
+        self.reactor_thread.start()
 
     def stop_daemons(self, remove_pids=True):
         print('\nStopping reactor')
-        self.active_thread.die()
+        self.reactor_thread.die()
 
         if remove_pids:
-
             pids = [os.path.join(self.STORAGEDIR, f) for f in os.listdir(self.STORAGEDIR) if f[-4:]=='.pid']
-
             for pidfile in pids:
                 print('Removing old pidfile ' + pidfile)
                 os.remove(pidfile)
 
+    def print_status(self):
+        print('Reactor Status:')
 
-    class Carbonthread(threading.Thread):
+        print('  Running: %s' % str(reactor.running))
+        print('  Started: %s' % str(reactor._started))
+        print('  Stopped: %s' % str(reactor._stopped))
 
+        print('%d Application Runners' % len(self.application_runners))
+        for ar in self.application_runners:
+            print('  %s' % ar.config['originalname'])
+
+        readers = reactor.getReaders()
+        listen_ports = [r.port for r in readers if r.__class__.__name__ == 'Port']
+        print('%d Open Ports' % len(listen_ports))
+        for p in listen_ports:
+            print('  %d' % p)
+
+        outbound_connections = [r for r in readers if r.__class__.__name__ == 'Client']
+        print('%d Outbound Connections' % len(outbound_connections))
+        for c in outbound_connections:
+            host = c.getHost()
+            peer = c.getPeer()
+            print('  %s:%d->%s:%d(%s)' % ("localhost", host.port, peer.host, peer.port, peer.type))
+
+        inbound_connections = [r for r in readers if r.__class__.__name__ == 'Server']
+        print('%d Inbound Connections' % len(inbound_connections))
+        for c in inbound_connections:
+            print('  %s:%d<-%s:%d(%s)' % ("localhost", c.server.port, c.client[0], c.client[1], c.server._type))
+
+
+    class ReactorThread(threading.Thread):
         def run(self):
             reactor.run(False)
 
         def die(self):
-            reactor.stop()
+            reactor.callFromThread(reactor.stop)
 
