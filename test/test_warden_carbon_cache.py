@@ -35,7 +35,6 @@ sys.path.insert(0, warden_dir)                          # add warden root to pat
 from warden_carbon import CarbonManager                 # import from warden
 
 temp_dir = tempfile.mkdtemp()
-os.environ["GRAPHITE_ROOT"] = temp_dir
 
 test_conf = os.path.join(test_dir, 'conf', 'carbon.conf')                # path to test config
 test_stor = os.path.join(test_dir, 'conf', 'storage-schemas.conf')       # path to test config
@@ -46,7 +45,7 @@ class WardenCarbonCacheTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(self):
 
-        self.manager = CarbonManager()
+        self.manager = CarbonManager(temp_dir)
         self.manager.add_daemon(CarbonManager.CACHE, test_conf)
         self.manager.start_daemons()
 

@@ -29,6 +29,7 @@ if platformType == "win32":
 else:
     from twisted.scripts._twistd_unix import ServerOptions, UnixApplicationRunner as _SomeApplicationRunner
 
+# import the global reactor object, this is initialised HERE! and cannot be instanced
 from twisted.internet import reactor
 
 class CarbonManager:
@@ -50,9 +51,18 @@ class CarbonManager:
     AGGREGATOR = 'carbon-aggregator'
     RELAY = 'carbon-relay'
 
-    def __init__(self):
-        self.GRAPHITEROOT = os.environ['GRAPHITE_ROOT']
-        self.STORAGEDIR = os.path.join(self.GRAPHITEROOT, 'storage')
+    def __init__(self, new_graphite_root=None):
+        """
+        Build the storage directory and prepare for Start. The storage directory
+        is in the GRAPHITE_ROOT folder which is used by all of the carbon daemons.
+        GRAPHITE_ROOT can be modified as shown by:
+            os.environ["GRAPHITE_ROOT"] = some_storage_directory
+        """
+        if new_graphite_root != None:
+            os.environ["GRAPHITE_ROOT"] = new_graphite_root
+
+        self.GRAPHITE_ROOT = os.environ['GRAPHITE_ROOT']
+        self.STORAGEDIR = os.path.join(self.GRAPHITE_ROOT, 'storage')
         if not os.path.exists(self.STORAGEDIR):
             os.makedirs(self.STORAGEDIR)
 
