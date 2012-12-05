@@ -50,12 +50,7 @@ class CarbonManager:
     AGGREGATOR = 'carbon-aggregator'
     RELAY = 'carbon-relay'
 
-    def __init__(self, path_to_carbon):
-        self.PATHTOCARBON = path_to_carbon                              # this could be changed to point to site packages/carbon
-        self.BINDIR = os.path.join(self.PATHTOCARBON, 'bin')
-        self.LIBDIR = os.path.join(self.PATHTOCARBON, 'lib')
-        sys.path.insert(0, self.LIBDIR)
-
+    def __init__(self):
         self.GRAPHITEROOT = os.environ['GRAPHITE_ROOT']
         self.STORAGEDIR = os.path.join(self.GRAPHITEROOT, 'storage')
         if not os.path.exists(self.STORAGEDIR):

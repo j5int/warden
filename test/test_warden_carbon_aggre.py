@@ -1,13 +1,13 @@
 import time
 import unittest
 import os
+import sys
 import tempfile
 
 import random
 
 from socket import socket
 from ConfigParser import ConfigParser
-from warden_carbon import CarbonManager
 
 # Check dependencies
 try:
@@ -29,20 +29,25 @@ except Exception as e:
 CARBON_SERVER = '127.0.0.1'
 CARBON_PORT = 2023
 
-warden_dir = os.path.dirname(os.path.abspath(__file__))                       # this is the test dir
-carbon_dir = os.path.join(os.path.dirname(warden_dir), 'carbon')
+test_dir = os.path.dirname(os.path.abspath(__file__))   # this is the test dir
+warden_dir = os.path.dirname(test_dir)                  # warden root
+sys.path.insert(0, warden_dir)                          # add warden root to path
+
+from warden_carbon import CarbonManager
 
 temp_dir = tempfile.mkdtemp()
 os.environ["GRAPHITE_ROOT"] = temp_dir
 
-test_conf = os.path.join(warden_dir, 'conf', 'carbon.conf')                # path to test config
-test_stor = os.path.join(warden_dir, 'conf', 'storage-schemas.conf')       # path to test config
+test_conf = os.path.join(test_dir, 'conf', 'carbon.conf')                # path to test config
+test_stor = os.path.join(test_dir, 'conf', 'storage-schemas.conf')       # path to test config
+
+
 
 class WardenCarbonAggreTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        self.manager = CarbonManager(carbon_dir)
+        self.manager = CarbonManager()
         self.manager.add_daemon(CarbonManager.CACHE, test_conf)
         self.manager.add_daemon(CarbonManager.AGGREGATOR, test_conf)
         self.manager.start_daemons()
