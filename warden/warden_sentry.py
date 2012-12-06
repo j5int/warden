@@ -37,10 +37,10 @@ class SentryManager:
         try:
             logan.settings.create_default_settings(self.config_path, runner.generate_settings)
 
-            if os.name=='nt':
-                cfg = open(self.configfile, 'a')
-                cfg.write('SENTRY_WEB_SERVER=\'cherrypy\'')
-                cfg.close()
+            #if os.name=='nt':
+            cfg = open(self.config_path, 'a')
+            cfg.write('SENTRY_WEB_SERVER=\'cherrypy\'')
+            cfg.close()
 
         except OSError, e:
             raise e.__class__, 'Unable to write default settings file to %r' % self.config_path
