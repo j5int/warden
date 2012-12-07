@@ -46,9 +46,9 @@ class WardenCarbonAggreTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        self.manager = CarbonManager(temp_dir)
-        self.manager.add_daemon(CarbonManager.CACHE, test_conf)
-        self.manager.add_daemon(CarbonManager.AGGREGATOR, test_conf)
+        self.manager = CarbonManager(test_conf, temp_dir)
+        self.manager.add_daemon(CarbonManager.CACHE)
+        self.manager.add_daemon(CarbonManager.AGGREGATOR)
         self.manager.start_daemons()
 
         config_parser = ConfigParser()

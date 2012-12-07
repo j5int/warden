@@ -29,21 +29,5 @@ class WardenSentryInitTestCase(unittest.TestCase):
         self.assertTrue(self.waitforsocket('localhost',9000))
         sm.stop_sentry()
 
-    def waitforsocket(self, host, port, timeout=300, sleeptime=5):
-        start = time.time()
-        while (time.time()-start)<timeout:
-            try:
-                s = socket.create_connection((host, port), timeout)
-                s.close()
-                print('Success')
-                return True
-
-            except Exception as e:
-                pass
-
-            time.sleep(sleeptime)
-        print('Failed')
-        return False
-
 if __name__=='__main__':
     unittest.main()

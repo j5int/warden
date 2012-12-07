@@ -1,6 +1,8 @@
 import os
 import sys
 import threading
+from warden_utils import waitforsocket
+from ConfigParser import SafeConfigParser
 
 # Check major dependencies
 try:
@@ -51,7 +53,7 @@ class CarbonManager:
     AGGREGATOR = 'carbon-aggregator'
     RELAY = 'carbon-relay'
 
-    def __init__(self, new_graphite_root=None):
+    def __init__(self, carbon_config_file, new_graphite_root=None):
         """
         Build the storage directory and prepare for Start. The storage directory
         is in the GRAPHITE_ROOT folder which is used by all of the carbon daemons.
@@ -70,15 +72,22 @@ class CarbonManager:
 
         self.application_runners = []
 
+        self.carbon_config_file = carbon_config_file
 
-    def add_daemon(self, program, configfile=None):
+        self.configuration = SafeConfigParser()
+        self.configuration.read(self.carbon_config_file)
+
+
+
+
+    def add_daemon(self, program):
         if reactor.running:                                                     # this is just for sanity, it may be unnecessary
             raise Exception('Cannot add daemon. Reactor is already running.')
 
         twistd_options = ["--no_save", "--nodaemon", program]
 
-        if configfile != None:
-            twistd_options.append('--config='+configfile)
+        if self.carbon_config_file != None:
+            twistd_options.append('--config='+self.carbon_config_file)
 
         self.config = ServerOptions()
         self.config.parseOptions(twistd_options)
@@ -107,6 +116,17 @@ class CarbonManager:
             for pidfile in pids:
                 print('Removing old pidfile ' + pidfile)
                 os.remove(pidfile)
+
+    def is_active(self):
+
+        result = True
+
+        for ar in self.application_runners:
+            dtype = ar.config['originalname'][7:]
+            pickleport = self.configuration.get(dtype,'PICKLE_RECEIVER_PORT')
+            result = result and waitforsocket('localhost',pickleport, 2, 1, 1)
+
+        return result
 
     def print_status(self):
         """
