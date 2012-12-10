@@ -17,5 +17,5 @@ Tests using Python's unittest module exist in the 'test' directory. They can be 
 Graphite & Sentry conflicts
 ===========================
 
-GraphiteWeb and Sentry both run on django webservers, this is usually fine but does not work appropriately from a single thread because of certain python variables.
+GraphiteWeb and Sentry both run on django webservers, this is usually fine but does not work appropriately from a single python process because of certain python globals.
 
