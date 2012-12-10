@@ -25,6 +25,9 @@ class SentryManager:
         Defaults to default config path
         """
 
+
+        os.environ['DJANGO_SETTINGS_MODULE'] = 'logan_config'
+
         # store old argument array
         self.old_argv = sys.argv
         self.config_path = config_path
@@ -84,11 +87,10 @@ class SentryManager:
             if not os.path.exists(self.config_file):
                 raise ValueError("Configuration file does not exist. Use 'sentry init' to initialize the file.")
 
-            os.environ['DJANGO_SETTINGS_MODULE'] = 'logan_config'
 
         def run(self):
 
-            print(self.config_file)
+            os.environ['DJANGO_SETTINGS_MODULE'] = 'logan_config'
 
             def settings_callback(settings):
                 runner.initialize_app({

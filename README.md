@@ -13,3 +13,9 @@ Unit Tests
 ==========
 
 Tests using Python's unittest module exist in the 'test' directory. They can be run individually as python scripts, but CANNOT be run using 'nose' because of the nature of the Twisted reactor.
+
+Graphite & Sentry conflicts
+===========================
+
+GraphiteWeb and Sentry both run on django webservers, this is usually fine but does not work appropriately from a single thread because of certain python variables.
+

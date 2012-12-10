@@ -3,10 +3,11 @@ import time
 from warden_utils import waitforsocket
 from warden_carbon import CarbonManager
 from warden_sentry import SentryManager
+from warden_graphite_web import GraphiteWebManager
 
 class Warden:
 
-    def __init__(self, carbon_config_file, daemons, sentry_config_file):
+    def __init__(self, carbon_config_file, daemons, sentry_config_file, webapp_dir, webapp_port):
 
         # check for config file existings
         try:
@@ -23,12 +24,20 @@ class Warden:
         for d in daemons:
             self.carbon.add_daemon(d)
 
+
         self.sentry = SentryManager(sentry_config_file, overwrite=False)
 
     def startup(self):
+
         self.sentry.start_sentry()
+        while not self.sentry.is_active():
+            time.sleep(0.5)
+        print('Sentry started')
 
         self.carbon.start_daemons()
+        while not self.carbon.is_active():
+            time.sleep(0.5)
+        print('Carbon started')
 
 
     def is_active(self):
@@ -55,9 +64,13 @@ if __name__ == '__main__':
 
     sentry_config = '/home/benm/.sentry/sentry.conf.py'
 
-    warden = Warden(carbon_config, carbon_daemons, sentry_config)
+    webapp_dir = os.path.join(os.environ['GRAPHITE_ROOT'], 'webapp')
+
+    warden = Warden(carbon_config, carbon_daemons, sentry_config, webapp_dir, 9090)
 
     warden.startup()
+
+    time.sleep(100)
 
     while not warden.is_active():
         time.sleep(0.5)
