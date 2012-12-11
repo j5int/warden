@@ -48,8 +48,8 @@ class Warden:
         self.carbon.stop_daemons()
         self.gentry.stop()
 
-if __name__ == '__main__':
 
+def main():
     carbon_config = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test', 'conf', 'carbon.conf')
 
     carbon_daemons =    [
@@ -71,3 +71,6 @@ if __name__ == '__main__':
 
     warden.shutdown()
 
+
+if __name__ == '__main__':
+    main()
