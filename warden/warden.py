@@ -2,20 +2,16 @@ import os
 import time
 from warden_utils import waitforsocket
 from warden_carbon import CarbonManager
-from warden_sentry import SentryManager
-from warden_graphite_web import GraphiteWebManager
+from warden_gentry import GentryManager
 
 class Warden:
 
-    def __init__(self, carbon_config_file, daemons, sentry_config_file, webapp_dir, webapp_port):
+    def __init__(self, carbon_config_file, daemons):
 
         # check for config file existings
         try:
             if os.path.isfile(carbon_config_file):
                 with open(carbon_config_file) as a:
-                    pass
-            if os.path.isfile(sentry_config_file):
-                with open(sentry_config_file) as b:
                     pass
         except IOError as e:
             raise e
@@ -24,15 +20,14 @@ class Warden:
         for d in daemons:
             self.carbon.add_daemon(d)
 
-
-        self.sentry = SentryManager(sentry_config_file, overwrite=False)
+        self.gentry = GentryManager()
 
     def startup(self):
 
-        self.sentry.start_sentry()
-        while not self.sentry.is_active():
+        self.gentry.start()
+        while not self.gentry.is_active():
             time.sleep(0.5)
-        print('Sentry started')
+        print('Gentry started')
 
         self.carbon.start_daemons()
         while not self.carbon.is_active():
@@ -42,7 +37,7 @@ class Warden:
 
     def is_active(self):
 
-        result = self.sentry.is_active()
+        result = self.gentry.is_active()
 
         if result == True:
             result = self.carbon.is_active()
@@ -51,7 +46,7 @@ class Warden:
 
     def shutdown(self):
         self.carbon.stop_daemons()
-        self.sentry.stop_sentry()
+        self.gentry.stop()
 
 if __name__ == '__main__':
 
@@ -62,11 +57,7 @@ if __name__ == '__main__':
                             CarbonManager.AGGREGATOR
                         ]
 
-    sentry_config = '/home/benm/.sentry/sentry.conf.py'
-
-    webapp_dir = os.path.join(os.environ['GRAPHITE_ROOT'], 'webapp')
-
-    warden = Warden(carbon_config, carbon_daemons, sentry_config, webapp_dir, 9090)
+    warden = Warden(carbon_config, carbon_daemons)
 
     warden.startup()
 

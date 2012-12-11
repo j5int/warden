@@ -1,5 +1,4 @@
 import os
-import sys
 import threading
 from warden_utils import waitforsocket
 from ConfigParser import SafeConfigParser
