@@ -49,9 +49,7 @@ class WardenCarbonTestCase(unittest.TestCase):
 
     def runTest(self):
 
-        self.manager = CarbonManager(test_conf, temp_dir)
-        self.manager.add_daemon(CarbonManager.CACHE)
-        self.manager.add_daemon(CarbonManager.AGGREGATOR)
+        self.manager = CarbonManager(test_conf, [CarbonManager.CACHE, CarbonManager.AGGREGATOR], temp_dir)
         self.manager.start_daemons()
 
         time.sleep(1)

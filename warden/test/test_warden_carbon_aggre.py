@@ -41,14 +41,12 @@ test_conf = os.path.join(test_dir, 'conf', 'carbon.conf')                # path 
 test_stor = os.path.join(test_dir, 'conf', 'storage-schemas.conf')       # path to test config
 
 
-
 class WardenCarbonAggreTestCase(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        self.manager = CarbonManager(test_conf, temp_dir)
-        self.manager.add_daemon(CarbonManager.CACHE)
-        self.manager.add_daemon(CarbonManager.AGGREGATOR)
+
+    def runTest(self):
+
+        self.manager = CarbonManager(test_conf, [CarbonManager.CACHE, CarbonManager.AGGREGATOR], temp_dir)
         self.manager.start_daemons()
 
         config_parser = ConfigParser()
@@ -68,8 +66,6 @@ class WardenCarbonAggreTestCase(unittest.TestCase):
 
         self.manager.print_status()
 
-    def runTest(self):
-
         tag = 'random_data_cca'
 
         sock = socket()
@@ -83,7 +79,6 @@ class WardenCarbonAggreTestCase(unittest.TestCase):
         num_substep = 20
 
         data = []
-        lines = []
 
         start = (time.time())
         start = start - (start % self.step)
@@ -92,7 +87,6 @@ class WardenCarbonAggreTestCase(unittest.TestCase):
 
         stime = float(float(self.step)/float(num_substep))
 
-        pts = (num_data_points)*(num_substep)
         tp = 0.0
 
         print('Bin is ' + str(self.step) + ' seconds.')
@@ -118,7 +112,7 @@ class WardenCarbonAggreTestCase(unittest.TestCase):
                 time.sleep(stime)
 
 
-            aggregated_data = aggregate(to_aggregate)
+            aggregated_data = average(to_aggregate)
             data.append(  aggregated_data  )
             print(aggregated_data)
             print('')
@@ -139,15 +133,13 @@ class WardenCarbonAggreTestCase(unittest.TestCase):
         for whisper_data, sent_data in zip(stored_data, data)[:-1]:     # :D
             self.assertAlmostEquals(whisper_data, sent_data)
 
-    @classmethod
-    def tearDownClass(self):
         self.manager.stop_daemons()
         time.sleep(1)
         self.manager.print_status()
         print('done.')
 
 
-def aggregate(data):
+def average(data):
     return sum([d[1] for d in data])/len(data)
 
 if __name__ == '__main__':

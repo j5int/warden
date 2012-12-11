@@ -8,6 +8,7 @@ class Warden:
 
     def __init__(self, carbon_config_file, daemons, gentry_settings_arg):
 
+        print('Starting Warden\n----------------')
         # check for config file existings
         try:
             if os.path.isfile(carbon_config_file):
@@ -16,9 +17,7 @@ class Warden:
         except IOError as e:
             raise e
 
-        self.carbon = CarbonManager(carbon_config_file)
-        for d in daemons:
-            self.carbon.add_daemon(d)
+        self.carbon = CarbonManager(carbon_config_file, daemons=daemons)
 
         self.gentry = GentryManager(gentry_settings_arg)
 
