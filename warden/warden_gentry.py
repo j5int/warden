@@ -8,7 +8,12 @@ class GentryManager:
     def __init__(self, gentry_settings):
         self.settingsfile = gentry_settings
 
-        self.thread = self.GentryServerThread(self.settingsfile)
+        os.environ['DJANGO_SETTINGS_MODULE'] = self. settingsfile
+
+        from django.conf import settings
+        # pull any settings in here if needed
+
+        self.thread = self.GentryServerThread()
 
     def start(self):
         self.thread.start()
@@ -21,14 +26,11 @@ class GentryManager:
 
     class GentryServerThread(threading.Thread):
 
-        def __init__(self, settings):
+        def __init__(self):
             threading.Thread.__init__(self)
-            self. settingsfile = settings
 
         def run(self):
             print('Starting Gentry thread')
-
-            os.environ['DJANGO_SETTINGS_MODULE'] = self. settingsfile
 
             management.execute_from_command_line(['manage.py', 'run'])
 
