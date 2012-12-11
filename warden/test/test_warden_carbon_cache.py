@@ -42,11 +42,9 @@ test_stor = os.path.join(test_dir, 'conf', 'storage-schemas.conf')       # path 
 
 class WardenCarbonCacheTestCase(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(self):
 
-        self.manager = CarbonManager(test_conf, temp_dir)
-        self.manager.add_daemon(CarbonManager.CACHE)
+    def runTest(self):
+        self.manager = CarbonManager(test_conf, [CarbonManager.CACHE], temp_dir)
         self.manager.start_daemons()
 
         config_parser = ConfigParser()
@@ -65,8 +63,6 @@ class WardenCarbonCacheTestCase(unittest.TestCase):
         time.sleep(2)
 
         self.manager.print_status()
-
-    def runTest(self):
 
         tag = 'random_data'
 
@@ -109,9 +105,6 @@ class WardenCarbonCacheTestCase(unittest.TestCase):
         for whisper_data, sent_data in zip(reversed(stored_data), reversed(data)):
             self.assertAlmostEquals(whisper_data, sent_data[1])
 
-
-    @classmethod
-    def tearDownClass(self):
         self.manager.stop_daemons()
         time.sleep(1)
         self.manager.print_status()

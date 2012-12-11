@@ -52,7 +52,7 @@ class CarbonManager:
     AGGREGATOR = 'carbon-aggregator'
     RELAY = 'carbon-relay'
 
-    def __init__(self, carbon_config_file, new_graphite_root=None):
+    def __init__(self, carbon_config_file, daemons=[], new_graphite_root=None):
         """
         Build the storage directory and prepare for Start. The storage directory
         is in the GRAPHITE_ROOT folder which is used by all of the carbon daemons.
@@ -76,7 +76,7 @@ class CarbonManager:
         self.configuration = SafeConfigParser()
         self.configuration.read(self.carbon_config_file)
 
-
+        self.daemons = daemons
 
 
     def add_daemon(self, program):
@@ -99,6 +99,10 @@ class CarbonManager:
         self.application_runners.append(appRunner)
 
     def start_daemons(self):
+
+        for d in self.daemons:
+            self.add_daemon(d)
+
         if reactor.running:
             raise Exception('Reactor is already running.')
         self.reactor_thread = self.ReactorThread()
