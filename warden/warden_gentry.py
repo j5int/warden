@@ -5,8 +5,10 @@ from warden_thread_mon import thread_async_raise
 
 class GentryManager:
 
-    def __init__(self):
-        self.thread = self.GentryServerThread()
+    def __init__(self, gentry_settings):
+        self.settingsfile = gentry_settings
+
+        self.thread = self.GentryServerThread(self.settingsfile)
 
     def start(self):
         self.thread.start()
@@ -19,10 +21,14 @@ class GentryManager:
 
     class GentryServerThread(threading.Thread):
 
+        def __init__(self, settings):
+            threading.Thread.__init__(self)
+            self. settingsfile = settings
+
         def run(self):
             print('Starting Gentry thread')
 
-            os.environ['DJANGO_SETTINGS_MODULE'] = 'gentry.settings'
+            os.environ['DJANGO_SETTINGS_MODULE'] = self. settingsfile
 
             management.execute_from_command_line(['manage.py', 'run'])
 

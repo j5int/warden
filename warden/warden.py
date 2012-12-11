@@ -6,7 +6,7 @@ from warden_gentry import GentryManager
 
 class Warden:
 
-    def __init__(self, carbon_config_file, daemons):
+    def __init__(self, carbon_config_file, daemons, gentry_settings_arg):
 
         # check for config file existings
         try:
@@ -20,7 +20,7 @@ class Warden:
         for d in daemons:
             self.carbon.add_daemon(d)
 
-        self.gentry = GentryManager()
+        self.gentry = GentryManager(gentry_settings_arg)
 
     def startup(self):
 
@@ -57,15 +57,17 @@ if __name__ == '__main__':
                             CarbonManager.AGGREGATOR
                         ]
 
-    warden = Warden(carbon_config, carbon_daemons)
+    gentry_settings = 'gentry.settings'
+
+    warden = Warden(carbon_config, carbon_daemons, gentry_settings)
 
     warden.startup()
-
-    time.sleep(100)
 
     while not warden.is_active():
         time.sleep(0.5)
     print('Ready')
+
+    time.sleep(60)
 
     warden.shutdown()
 
