@@ -120,6 +120,8 @@ class CarbonManager:
 
         result = True
 
+        if not self.reactor_thread.isAlive(): return False
+
         for ar in self.application_runners:
             dtype = ar.config['originalname'][7:]
             pickleport = self.configuration.get(dtype,'PICKLE_RECEIVER_PORT')

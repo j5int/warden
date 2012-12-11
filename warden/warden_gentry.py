@@ -22,6 +22,7 @@ class GentryManager:
         self.thread.stop()
 
     def is_active(self):
+        if not self.reactor_thread.isAlive(): return False
         return True
 
     class GentryServerThread(threading.Thread):

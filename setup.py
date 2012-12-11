@@ -29,7 +29,7 @@ Finally, there is an API that can be used by the monitored application to publis
       author_email     = 'support@sjsoft.com',
       packages         = ['warden', 'warden.test'],
       package_data     = {'warden.test' : ['conf/*.*']},
-      install_requires = ['whisper==0.9.10', 'carbon==0.9.10', 'graphite-web==0.9.10', 'Django==1.4.2', 'sentry==5.0.21'],
+      install_requires = ['whisper==0.9.10', 'carbon==0.9.10', 'graphite-web==0.9.10', 'Django==1.4.2', 'django-tagging==0.3.1', 'sentry==5.0.21', 'gentry'],
       keywords         = 'sentry carbon graphite monitoring',
       url              = 'https://github.com/matthewhampton/warden',
       entry_points     = {
