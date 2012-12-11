@@ -28,7 +28,7 @@ Finally, there is an API that can be used by the monitored application to publis
       author           = 'Matthew Hampton',
       author_email     = 'support@sjsoft.com',
       packages         = ['warden'],
-      requires         = [],
+      install_requires = ['whisper==0.9.10', 'carbon==0.9.10', 'graphite-web==0.9.10', 'Django==1.4.2', 'sentry==5.0.21'],
       keywords         = 'sentry carbon graphite monitoring',
       url              = 'https://github.com/matthewhampton/warden',
       classifiers      = [
