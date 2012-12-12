@@ -3,10 +3,11 @@ import time
 from warden_utils import waitforsocket
 from warden_carbon import CarbonManager
 from warden_gentry import GentryManager
+from warden_diamond import DiamondManager
 
 class Warden:
 
-    def __init__(self, carbon_config_file, daemons, gentry_settings_arg):
+    def __init__(self, carbon_config_file, daemons, gentry_settings_arg, diamond_config_file):
 
         print('Starting Warden\n----------------')
         # check for config file existings
@@ -22,6 +23,9 @@ class Warden:
         self.gentry = GentryManager(gentry_settings_arg)
         self.gentry.initialise()
 
+        self.diamond = DiamondManager(diamond_config_file)
+
+
     def startup(self):
 
         self.gentry.start()
@@ -33,6 +37,8 @@ class Warden:
         while not self.carbon.is_active():
             time.sleep(0.5)
         print('Carbon started')
+
+        self.diamond.start()
 
 
     def is_active(self):
@@ -47,6 +53,7 @@ class Warden:
     def shutdown(self):
         self.carbon.stop_daemons()
         self.gentry.stop()
+        self.diamond.stop()
 
 
 def main():
@@ -59,7 +66,9 @@ def main():
 
     gentry_settings = 'gentry.settings'
 
-    warden = Warden(carbon_config, carbon_daemons, gentry_settings)
+    diamond_config_file = '/home/benm/.diamond/etc/diamond/diamond.conf'
+
+    warden = Warden(carbon_config, carbon_daemons, gentry_settings, diamond_config_file)
 
     warden.startup()
 
@@ -67,7 +76,11 @@ def main():
         time.sleep(0.5)
     print('Ready')
 
-    time.sleep(60)
+    try:
+        while True:
+            time.sleep(10)
+    except KeyboardInterrupt:
+        pass
 
     warden.shutdown()
 
