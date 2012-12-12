@@ -20,6 +20,7 @@ class Warden:
         self.carbon = CarbonManager(carbon_config_file, daemons=daemons)
 
         self.gentry = GentryManager(gentry_settings_arg)
+        self.gentry.initialise()
 
     def startup(self):
 
