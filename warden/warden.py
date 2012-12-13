@@ -32,7 +32,8 @@ class Warden:
                 with open(diamond_config_file) as a:
                     pass
         except IOError as e:
-            raise e
+            log.exception(e.message)
+            sys.exit(1)
 
         # initialise Carbon, daemon services are setup here, but the event reactor is not yet run
         self.carbon = CarbonManager(carbon_config_file, daemons=daemons)
@@ -125,16 +126,13 @@ def main():
 
     warden = Warden(carbon_config, carbon_daemons, gentry_settings, diamond_config_file)
 
-    warden.startup()
-
-
     try:
+
+        warden.startup()
         while True:
             time.sleep(10)
     except KeyboardInterrupt:
-        pass
-
-    warden.shutdown()
+        warden.shutdown()
 
 
 if __name__ == '__main__':

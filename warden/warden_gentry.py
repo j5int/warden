@@ -60,11 +60,13 @@ class GentryManager:
         log.debug("Started Gentry.")
 
     def stop(self):
-
-        log.debug("Stopping Gentry..")
-        self.thread.stop()
-        self.thread.join()
-        log.debug("Stopepd Gentry.")
+        if self.thread.isAlive():
+            log.debug("Stopping Gentry..")
+            self.thread.stop()
+            self.thread.join()
+            log.debug("Stopped Gentry.")
+        else:
+            log.error("Can't stop Gentry if it has not started.")
 
     def is_active(self):
         if not self.thread.isAlive(): return False

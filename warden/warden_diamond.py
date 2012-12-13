@@ -40,10 +40,13 @@ class DiamondManager:
         log.debug("Started Diamond.")
 
     def stop(self):
-        log.debug("Stopping Diamond..")
-        self.thread.stop()
-        self.thread.join()
-        log.debug("Stopped Diamond.")
+        if self.thread.isAlive():
+            log.debug("Stopping Diamond..")
+            self.thread.stop()
+            self.thread.join()
+            log.debug("Stopped Diamond.")
+        else:
+            log.error("Can't stop Diamond if it has not started.")
 
     def is_active(self):
         if not self.thread:

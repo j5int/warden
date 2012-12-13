@@ -120,9 +120,14 @@ class CarbonManager:
         log.debug("Started Carbon.")
 
     def stop_daemons(self, remove_pids=True):
-        log.debug("Stopping Carbon..")
-        self.reactor_thread.die()
-        self.reactor_thread.join()
+        if self.reactor_thread.isAlive():
+            log.debug("Stopping Carbon..")
+            self.reactor_thread.die()
+            self.reactor_thread.join()
+
+            log.debug("Stopped Carbon.")
+        else:
+            log.error("Can't stop Carbon/Twistd if it has not started.")
 
         #this may be unnecessary
         if remove_pids:
@@ -130,7 +135,6 @@ class CarbonManager:
             for pidfile in pids:
                 log.debug("Removing old pidfile %s" % pidfile)
                 os.remove(pidfile)
-        log.debug("Stopped Carbon.")
 
     def is_active(self):
 
