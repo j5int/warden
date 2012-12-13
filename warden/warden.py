@@ -1,9 +1,11 @@
 import os
+import sys
 import time
 import platform
 from warden_carbon import CarbonManager
 from warden_gentry import GentryManager
 from warden_diamond import DiamondManager
+from warden_logging import log
 
 class Warden:
     """
@@ -20,7 +22,7 @@ class Warden:
         diamond_config_file:            a path to a diamond configuration file
         """
 
-        print('Starting Warden\n----------------')
+        log.info('Initialising Warden..')
         # check for config file existings
         try:
             if os.path.isfile(carbon_config_file):
@@ -37,7 +39,6 @@ class Warden:
 
         # initialise Gentry, this will perform database manipulation for Sentry
         self.gentry = GentryManager(gentry_settings_arg)
-        self.gentry.initialise()
 
         # initialise Diamond, not much is required here
         self.diamond = DiamondManager(diamond_config_file)
@@ -49,20 +50,27 @@ class Warden:
         correct ports
         """
 
+        log.info('Starting Warden..')
+
         self.carbon.start_daemons()
         while not self.carbon.is_active():
             time.sleep(0.5)
-        print('Carbon started')
+        log.info('1. Carbon Started')
 
         self.diamond.start()
         while not self.diamond.is_active():
             time.sleep(0.5)
-        print('Diamond started')
+        log.info('2. Diamond Started')
 
         self.gentry.start()
         while not self.gentry.is_active():
             time.sleep(0.5)
-        print('Gentry started')
+        log.info('3. Gentry Started')
+
+        # blocking
+        while not self.is_active():
+            time.sleep(0.5)
+        log.info('Started Warden.')
 
 
     def is_active(self):
@@ -85,9 +93,14 @@ class Warden:
         """
         Shutdown in order, some threading may be wrong here, make sure of inidividual .join()
         """
+
+        log.info('Shutting down Warden..')
+
         self.diamond.stop()
         self.gentry.stop()
         self.carbon.stop_daemons()
+
+        log.info('Shut down Warden.')
 
 
 def main():
@@ -114,9 +127,6 @@ def main():
 
     warden.startup()
 
-    while not warden.is_active():
-        time.sleep(0.5)
-    print('Ready')
 
     try:
         while True:

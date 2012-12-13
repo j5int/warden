@@ -2,6 +2,7 @@ import os
 import sys
 import configobj
 import threading
+from warden_logging import log
 import logging
 
 from diamond.server import Server
@@ -32,11 +33,17 @@ class DiamondManager:
         self.log_diamond.disabled = True            # disable this for now, it causes a lot of console spam
 
     def start(self):
+        log.debug("Starting Diamond..")
         self.thread = self.DiamondThread(self.config)
         self.thread.start()
 
+        log.debug("Started Diamond.")
+
     def stop(self):
+        log.debug("Stopping Diamond..")
         self.thread.stop()
+        self.thread.join()
+        log.debug("Stopped Diamond.")
 
     def is_active(self):
         if not self.thread:

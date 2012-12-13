@@ -1,6 +1,7 @@
 import os
 import threading
 from warden_utils import waitforsocket
+from warden_logging import log
 from ConfigParser import SafeConfigParser
 
 # Check major dependencies
@@ -59,10 +60,15 @@ class CarbonManager:
         GRAPHITE_ROOT can be modified as shown by:
             os.environ["GRAPHITE_ROOT"] = some_storage_directory
         """
+
+        log.debug("Initialising Carbon")
         if new_graphite_root != None:
             os.environ["GRAPHITE_ROOT"] = new_graphite_root
 
         self.GRAPHITE_ROOT = os.environ['GRAPHITE_ROOT']
+
+        log.debug("$GRAPHITE_ROOT = %s" % self.GRAPHITE_ROOT)
+
         self.STORAGEDIR = os.path.join(self.GRAPHITE_ROOT, 'storage')
         if not os.path.exists(self.STORAGEDIR):
             os.makedirs(self.STORAGEDIR)
@@ -77,6 +83,8 @@ class CarbonManager:
         self.configuration.read(self.carbon_config_file)
 
         self.daemons = daemons
+
+        log.debug("Carbon Daemons = %s" % self.daemons)
 
 
     def add_daemon(self, program):
@@ -99,6 +107,7 @@ class CarbonManager:
         self.application_runners.append(appRunner)
 
     def start_daemons(self):
+        log.debug("Starting Carbon..")
 
         for d in self.daemons:
             self.add_daemon(d)
@@ -108,17 +117,20 @@ class CarbonManager:
         self.reactor_thread = self.ReactorThread()
         self.reactor_thread.start()
 
+        log.debug("Started Carbon.")
+
     def stop_daemons(self, remove_pids=True):
-        print('\nStopping reactor..')
+        log.debug("Stopping Carbon..")
         self.reactor_thread.die()
         self.reactor_thread.join()
-        print('Stopped')
 
+        #this may be unnecessary
         if remove_pids:
             pids = [os.path.join(self.STORAGEDIR, f) for f in os.listdir(self.STORAGEDIR) if f[-4:]=='.pid']
             for pidfile in pids:
-                print('Removing old pidfile ' + pidfile)
+                log.debug("Removing old pidfile %s" % pidfile)
                 os.remove(pidfile)
+        log.debug("Stopped Carbon.")
 
     def is_active(self):
 

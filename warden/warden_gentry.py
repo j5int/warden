@@ -5,6 +5,7 @@ import threading
 from django.core import management
 from django.contrib.auth.hashers import PBKDF2PasswordHasher, get_random_string
 from warden_thread_mon import thread_async_raise
+from warden_logging import log
 
 class GentryManager:
 
@@ -15,15 +16,14 @@ class GentryManager:
 
         from django.conf import settings
         self.database_path = settings.DATABASES['default']['NAME']
-        print(self.database_path)
         # pull any settings in here if needed
 
-        self.thread = self.GentryServerThread()
-
-    def initialise(self):
         management.execute_from_command_line(['manage.py', 'syncdb','--noinput'])
         management.execute_from_command_line(['manage.py', 'migrate'])
         self.add_superuser('admin@admin.com', 'admin','admin')
+
+        self.thread = self.GentryServerThread()
+
 
     def add_superuser(self, email, user, password):
 
@@ -43,27 +43,28 @@ class GentryManager:
             if(cur.rowcount == 0):
                 cur.execute('INSERT INTO auth_user VALUES(?,?,?,?,?,?,?,?,?,?,?)',(0, user, user, user, email, phash, 1, 1, 1, dtime, dtime))
                 conn.commit()
-                print('INSERTED new superuser, %s -> %s' % (user, phash))
+                log.debug('INSERTED new superuser, %s -> %s' % (user, phash))
             else:
-                print('A User with that username already exists')
+                log.debug('A User with that username already exists')
 
 
         except Exception as e:
-            print(e)
-            print('failed to add new super user password, you may not be able to login. ')
+            raise e
         finally:
             if not conn:
                 conn.close()
 
-
-
-
-
     def start(self):
+        log.debug("Starting Gentry..")
         self.thread.start()
+        log.debug("Started Gentry.")
 
     def stop(self):
+
+        log.debug("Stopping Gentry..")
         self.thread.stop()
+        self.thread.join()
+        log.debug("Stopepd Gentry.")
 
     def is_active(self):
         if not self.thread.isAlive(): return False
@@ -75,8 +76,6 @@ class GentryManager:
             threading.Thread.__init__(self)
 
         def run(self):
-            print('Starting Gentry thread')
-
             management.execute_from_command_line(['manage.py', 'run'])
 
         def stop(self):
