@@ -6,8 +6,19 @@ from warden_gentry import GentryManager
 from warden_diamond import DiamondManager
 
 class Warden:
+    """
+    Warden is a solution for controlling Carbon daemons, Sentry, Graphite-web and Diamon all within a single process.
+    The sub systems all run in separate threads and can be shutdown gracefully using sigint or stop commands.
+    """
 
     def __init__(self, carbon_config_file, daemons, gentry_settings_arg, diamond_config_file):
+        """
+        Constructor takes arguments:
+        carbon_config_file:             a path to the carbon config file
+        daemons:                        an array of carbon daemons (see warden_carbon for details)
+        gentry_settings_arg:            path to the gentry settings.py module
+        diamond_config_file:            a path to a diamond configuration file
+        """
 
         print('Starting Warden\n----------------')
         # check for config file existings
@@ -21,15 +32,22 @@ class Warden:
         except IOError as e:
             raise e
 
+        # initialise Carbon, daemon services are setup here, but the event reactor is not yet run
         self.carbon = CarbonManager(carbon_config_file, daemons=daemons)
 
+        # initialise Gentry, this will perform database manipulation for Sentry
         self.gentry = GentryManager(gentry_settings_arg)
         self.gentry.initialise()
 
+        # initialise Diamond, not much is required here
         self.diamond = DiamondManager(diamond_config_file)
 
-
     def startup(self):
+        """
+        Start the warden instance
+        Carbon, Diamond and Gentry are started in order, and this method will only exit once all are bound to their
+        correct ports
+        """
 
         self.carbon.start_daemons()
         while not self.carbon.is_active():
@@ -37,6 +55,9 @@ class Warden:
         print('Carbon started')
 
         self.diamond.start()
+        while not self.diamond.is_active():
+            time.sleep(0.5)
+        print('Diamond started')
 
         self.gentry.start()
         while not self.gentry.is_active():
@@ -44,26 +65,36 @@ class Warden:
         print('Gentry started')
 
 
-
     def is_active(self):
+        """
+        A general active state query.
+        returns False as soon as anything is not running
+        """
 
         result = self.gentry.is_active()
 
-        if result == True:
+        if result:
             result = self.carbon.is_active()
 
-        if result == True:
+        if result:
             result = self.diamond.is_active()
 
         return result
 
     def shutdown(self):
+        """
+        Shutdown in order, some threading may be wrong here, make sure of inidividual .join()
+        """
         self.diamond.stop()
         self.gentry.stop()
         self.carbon.stop_daemons()
 
 
 def main():
+    """
+    TEST CODE:
+    ideally all paths should be loaded from a config file and NOT hardcoded like this
+    """
     carbon_config = '/home/benm/.graphite/conf/carbon.conf'
 
     carbon_daemons =    [

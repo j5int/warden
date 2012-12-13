@@ -29,7 +29,7 @@ class DiamondManager:
         streamHandler.setFormatter(formatter)
         streamHandler.setLevel(logging.DEBUG)
         self.log_diamond.addHandler(streamHandler)
-        self.log_diamond.disabled = True
+        self.log_diamond.disabled = True            # disable this for now, it causes a lot of console spam
 
     def start(self):
         self.thread = self.DiamondThread(self.config)
