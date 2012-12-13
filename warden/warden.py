@@ -37,8 +37,6 @@ class Warden:
             time.sleep(0.5)
         print('Carbon started')
 
-        self.carbon.print_status()
-
         self.gentry.start()
         while not self.gentry.is_active():
             time.sleep(0.5)
@@ -60,9 +58,9 @@ class Warden:
         return result
 
     def shutdown(self):
-        self.carbon.stop_daemons()
-        self.gentry.stop()
         self.diamond.stop()
+        self.gentry.stop()
+        self.carbon.stop_daemons()
 
 
 def main():
@@ -84,11 +82,6 @@ def main():
     while not warden.is_active():
         time.sleep(0.5)
     print('Ready')
-
-    time.sleep(5)
-
-    warden.carbon.print_status()
-
 
     try:
         while True:

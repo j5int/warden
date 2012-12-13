@@ -2,6 +2,7 @@ import os
 import sys
 import configobj
 import threading
+import logging
 
 from diamond.server import Server
 
@@ -17,6 +18,18 @@ class DiamondManager:
         else:
             print >> sys.stderr, "ERROR: Config file: %s does not exist." % (configfile)
             sys.exit(1)
+
+        self.log_diamond = logging.getLogger('diamond')
+        self.log_diamond.setLevel(logging.DEBUG)
+        self.log_diamond.propagate = False
+
+#       LOG to STDOUT
+        formatter = logging.Formatter('[%(asctime)s] [%(threadName)s] [%(message)s]')
+        streamHandler = logging.StreamHandler(sys.stdout)
+        streamHandler.setFormatter(formatter)
+        streamHandler.setLevel(logging.DEBUG)
+        self.log_diamond.addHandler(streamHandler)
+        self.log_diamond.disabled = True
 
     def start(self):
         self.thread = self.DiamondThread(self.config)
