@@ -1,6 +1,7 @@
 import os
 import time
-from warden_utils import waitforsocket
+from socket import socket
+import random
 from warden_carbon import CarbonManager
 from warden_gentry import GentryManager
 from warden_diamond import DiamondManager
@@ -15,6 +16,9 @@ class Warden:
             if os.path.isfile(carbon_config_file):
                 with open(carbon_config_file) as a:
                     pass
+            if os.path.isfile(diamond_config_file):
+                with open(diamond_config_file) as a:
+                    pass
         except IOError as e:
             raise e
 
@@ -28,15 +32,17 @@ class Warden:
 
     def startup(self):
 
-        self.gentry.start()
-        while not self.gentry.is_active():
-            time.sleep(0.5)
-        print('Gentry started')
-
         self.carbon.start_daemons()
         while not self.carbon.is_active():
             time.sleep(0.5)
         print('Carbon started')
+
+        self.carbon.print_status()
+
+        self.gentry.start()
+        while not self.gentry.is_active():
+            time.sleep(0.5)
+        print('Gentry started')
 
         self.diamond.start()
 
@@ -48,6 +54,9 @@ class Warden:
         if result == True:
             result = self.carbon.is_active()
 
+        if result == True:
+            result = self.diamond.is_active()
+
         return result
 
     def shutdown(self):
@@ -57,7 +66,7 @@ class Warden:
 
 
 def main():
-    carbon_config = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test', 'conf', 'carbon.conf')
+    carbon_config = '/home/benm/.graphite/conf/carbon.conf'
 
     carbon_daemons =    [
                             CarbonManager.CACHE,
@@ -75,6 +84,11 @@ def main():
     while not warden.is_active():
         time.sleep(0.5)
     print('Ready')
+
+    time.sleep(5)
+
+    warden.carbon.print_status()
+
 
     try:
         while True:

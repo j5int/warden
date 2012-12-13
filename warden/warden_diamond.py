@@ -25,6 +25,12 @@ class DiamondManager:
     def stop(self):
         self.thread.stop()
 
+    def is_active(self):
+        if not self.thread:
+            return False
+
+        return self.thread.isAlive()
+
     class DiamondThread(threading.Thread):
 
         def __init__(self, config):
