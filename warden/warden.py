@@ -1,7 +1,6 @@
 import os
 import time
-from socket import socket
-import random
+import platform
 from warden_carbon import CarbonManager
 from warden_gentry import GentryManager
 from warden_diamond import DiamondManager
@@ -37,12 +36,13 @@ class Warden:
             time.sleep(0.5)
         print('Carbon started')
 
+        self.diamond.start()
+
         self.gentry.start()
         while not self.gentry.is_active():
             time.sleep(0.5)
         print('Gentry started')
 
-        self.diamond.start()
 
 
     def is_active(self):
@@ -74,6 +74,10 @@ def main():
     gentry_settings = 'gentry.settings'
 
     diamond_config_file = '/home/benm/.diamond/etc/diamond/diamond.conf'
+
+    if platform.system() == 'Windows':
+        carbon_config = 'C:\\Graphite\conf\carbon.conf'
+        diamond_config_file = 'C:\\.diamond/diamond.conf'
 
     warden = Warden(carbon_config, carbon_daemons, gentry_settings, diamond_config_file)
 
