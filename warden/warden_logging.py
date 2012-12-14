@@ -9,5 +9,5 @@ log.propagate = False               #?
 formatter = logging.Formatter('[%(asctime)s][%(levelname)s][%(message)s]')
 streamHandler = logging.StreamHandler(sys.stdout)
 streamHandler.setFormatter(formatter)
-streamHandler.setLevel(logging.DEBUG)
+streamHandler.setLevel(logging.INFO)
 log.addHandler(streamHandler)
