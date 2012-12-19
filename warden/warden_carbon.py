@@ -49,10 +49,6 @@ class CarbonManager:
         manager.print_status() # to print the current status of the reactor and app runners
     """
 
-    CACHE = 'carbon-cache'
-    AGGREGATOR = 'carbon-aggregator'
-    RELAY = 'carbon-relay'
-
     def __init__(self, carbon_config_file, daemons=[], new_graphite_root=None):
         """
         Build the storage directory and prepare for Start. The storage directory
@@ -62,7 +58,7 @@ class CarbonManager:
         """
 
         log.debug("Initialising Carbon")
-        if new_graphite_root != None:
+        if new_graphite_root is not None:
             os.environ["GRAPHITE_ROOT"] = new_graphite_root
 
         self.GRAPHITE_ROOT = os.environ['GRAPHITE_ROOT']
@@ -77,7 +73,7 @@ class CarbonManager:
 
         self.application_runners = []
 
-        self.carbon_config_file = carbon_config_file
+        self.carbon_config_file = os.path.expanduser(carbon_config_file)
 
         self.configuration = SafeConfigParser()
         self.configuration.read(self.carbon_config_file)

@@ -16,6 +16,7 @@ class GentryManager:
 
         from django.conf import settings
         self.database_path = settings.DATABASES['default']['NAME']
+        log.info('database_path is %s' % self.database_path)
         # pull any settings in here if needed
 
         management.execute_from_command_line(['manage.py', 'syncdb','--noinput'])
@@ -40,12 +41,12 @@ class GentryManager:
 
             # first check for existing user with the same username
             cur.execute("SELECT * FROM auth_user WHERE username LIKE '%s'" % user)
-            if(cur.rowcount == 0):
-                cur.execute('INSERT INTO auth_user VALUES(?,?,?,?,?,?,?,?,?,?,?)',(0, user, user, user, email, phash, 1, 1, 1, dtime, dtime))
+            if cur.rowcount == 0:
+                cur.execute('INSERT INTO auth_user VALUES(?,?,?,?,?,?,?,?,?,?,?)',(None, user, user, user, email, phash, 1, 1, 1, dtime, dtime))
                 conn.commit()
-                log.debug('INSERTED new superuser, %s -> %s' % (user, phash))
+                log.info('INSERTED new superuser, %s -> %s' % (user, phash))
             else:
-                log.debug('A User with that username already exists')
+                log.info('A User with that username already exists')
 
 
         except Exception as e:

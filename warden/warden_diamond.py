@@ -13,6 +13,8 @@ class DiamondManager:
         self.thread = None
         self.config = None
 
+        configfile = os.path.expanduser(configfile)
+
         if os.path.exists(configfile):
             self.config = configobj.ConfigObj(os.path.abspath(configfile))
             self.config['configfile'] = configfile

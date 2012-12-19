@@ -1,13 +1,14 @@
 import sys
 import logging
+import settings
 
 log = logging.getLogger('warden')
 
-log.setLevel(logging.DEBUG)
+log.setLevel(settings.STDOUT_LEVEL)
 log.propagate = False               #?
 
 formatter = logging.Formatter('[%(asctime)s][%(levelname)s][%(message)s]')
 streamHandler = logging.StreamHandler(sys.stdout)
 streamHandler.setFormatter(formatter)
-streamHandler.setLevel(logging.INFO)
+streamHandler.setLevel(settings.STDOUT_LEVEL)
 log.addHandler(streamHandler)
