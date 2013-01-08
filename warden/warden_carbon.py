@@ -20,9 +20,9 @@ try:
 except Exception as e:
     print('Missing required dependency: Twisted=11.10.1')
     exit(1)
-
+import pprint
 from twisted.scripts.twistd import ServerOptions
-from twisted.application import app, service, internet
+from twisted.application import  service
 from twisted.python.runtime import platformType
 
 # import platform specific twisted application runner
@@ -69,11 +69,11 @@ class CarbonManager:
         if not os.path.exists(self.STORAGEDIR):
             os.makedirs(self.STORAGEDIR)
 
+        self.application_service = service.MultiService()
+
         self.reactor_thread = None
 
-        self.application_runners = []
-
-        self.carbon_config_file = os.path.expanduser(carbon_config_file)
+        self.carbon_config_file = carbon_config_file
 
         self.configuration = SafeConfigParser()
         self.configuration.read(self.carbon_config_file)
@@ -89,27 +89,40 @@ class CarbonManager:
 
         twistd_options = ["--no_save", "--nodaemon", program]
 
-        if self.carbon_config_file != None:
-            twistd_options.append('--config='+self.carbon_config_file)
+        if self.carbon_config_file is not None:
+            twistd_options.append('--config=' + self.carbon_config_file)
 
-        self.config = ServerOptions()
-        self.config.parseOptions(twistd_options)
-        self.config['originalname'] = program
+        config = ServerOptions()
+        config.parseOptions(twistd_options)
+        config['originalname'] = program
 
-        appRunner = _SomeApplicationRunner(self.config)
-        appRunner.preApplication()
-        appRunner.application = appRunner.createOrGetApplication()
-        service.IService(appRunner.application).services[0].startService()
-        self.application_runners.append(appRunner)
+        plg = config.loadedPlugins[config.subCommand]
+        ser = plg.makeService(config.subOptions)
+        ser.setServiceParent(self.application_service)
+
 
     def start_daemons(self):
         log.debug("Starting Carbon..")
 
-        for d in self.daemons:
-            self.add_daemon(d)
+        from carbon_combined_plugin import CarbonCombinedServiceMaker
+
+
+        twistd_options = ["--no_save", "--nodaemon", 'carbon-aggregator']
+
+        if self.carbon_config_file is not None:
+            twistd_options.append('--config=' + self.carbon_config_file)
+
+        config = ServerOptions()
+        config.parseOptions(twistd_options)
+        config.subCommand = 'carbon-aggregator'
+
+        plg = config.loadedPlugins[config.subCommand]
+        self.application_service = plg.makeService(config.subOptions)
 
         if reactor.running:
             raise Exception('Reactor is already running.')
+
+        self.application_service.startService()
         self.reactor_thread = self.ReactorThread()
         self.reactor_thread.start()
 
@@ -118,6 +131,9 @@ class CarbonManager:
     def stop_daemons(self, remove_pids=True):
         if self.reactor_thread.isAlive():
             log.debug("Stopping Carbon..")
+
+            self.application_service.stopService()
+
             self.reactor_thread.die()
             self.reactor_thread.join()
 
@@ -138,8 +154,8 @@ class CarbonManager:
 
         if not self.reactor_thread.isAlive(): return False
 
-        for ar in self.application_runners:
-            dtype = ar.config['originalname'][7:]
+        for service in self.application_service.services:
+            dtype = 'aggregator'
             pickleport = self.configuration.get(dtype,'PICKLE_RECEIVER_PORT')
             result = result and waitforsocket('localhost',pickleport, 2, 1, 1)
 

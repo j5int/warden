@@ -23,16 +23,16 @@ class DiamondManager:
             sys.exit(1)
 
         self.log_diamond = logging.getLogger('diamond')
-        self.log_diamond.setLevel(logging.DEBUG)
+        self.log_diamond.setLevel(logging.INFO)
         self.log_diamond.propagate = False
 
 #       LOG to STDOUT
-        formatter = logging.Formatter('[%(asctime)s] [%(threadName)s] [%(message)s]')
+        formatter = logging.Formatter('[%(asctime)s][%(levelname)s][%(message)s]')
         streamHandler = logging.StreamHandler(sys.stdout)
         streamHandler.setFormatter(formatter)
-        streamHandler.setLevel(logging.DEBUG)
+        streamHandler.setLevel(logging.INFO)
         self.log_diamond.addHandler(streamHandler)
-        self.log_diamond.disabled = True            # disable this for now, it causes a lot of console spam
+        self.log_diamond.disabled = False            # disable this for now, it causes a lot of console spam
 
     def start(self):
         log.debug("Starting Diamond..")
