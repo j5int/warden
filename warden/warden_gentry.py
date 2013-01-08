@@ -77,11 +77,24 @@ class GentryManager:
 
         def __init__(self):
             threading.Thread.__init__(self)
+            self.server = None
 
         def run(self):
-            management.execute_from_command_line(['manage.py', 'run'])
+                
+            from gentry import settings
+            from gentry.wsgi import application
+            from cherrypy import wsgiserver
+
+            host = settings.SENTRY_WEB_HOST
+            port = settings.SENTRY_WEB_PORT
+
+            self.server = wsgiserver.CherryPyWSGIServer((host, port), application)
+
+            log.debug("Starting CherryPy server on %s:%s" % (host, port))
+            self.server.start()
 
         def stop(self):
-            thread_async_raise(self, KeyboardInterrupt)
+            log.debug("Shutting down CherryPy server...")
+            self.server.stop()
 
 

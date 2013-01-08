@@ -8,18 +8,15 @@ STDOUT_LEVEL = logging.DEBUG
 
 # DIAMOND
 # ----------------
-START_DIAMOND = False
 
 DIAMOND_CONFIG = '/home/benm/.diamond/etc/diamond/diamond.conf'
 
 # GENTRY
 # ----------------
-START_GENTRY = False
 
 GENTRY_SETTINGS_MODULE = 'gentry.settings'
 
 # CARBON
-# at least carbon-cache is required to run the other threads
 # ----------------
 
 GRAPHITE_ROOT = '/home/benm/.graphite'

@@ -28,13 +28,11 @@ class Warden:
         # initialise Carbon, daemon services are setup here, but the event reactor is not yet run
         self.carbon = CarbonManager(settings.CARBON_CONFIG, daemons=settings.CARBON_DAEMONS, new_graphite_root=settings.GRAPHITE_ROOT)
 
-        # initialise Gentry, this will perform database manipulation for Sentry
-        if settings.START_GENTRY:
-            self.gentry = GentryManager(settings.GENTRY_SETTINGS_MODULE)
+        # initialise Gentry, this will also perform database manipulation for Sentry
+        self.gentry = GentryManager(settings.GENTRY_SETTINGS_MODULE)
 
         # initialise Diamond, not much is required here
-        if settings.START_DIAMOND:
-            self.diamond = DiamondManager(settings.DIAMOND_CONFIG)
+        self.diamond = DiamondManager(settings.DIAMOND_CONFIG)
 
     def startup(self):
         """
@@ -50,17 +48,15 @@ class Warden:
             time.sleep(0.5)
         log.info('1. Carbon Started')
 
-        if settings.START_DIAMOND:
-            self.diamond.start()
-            while not self.diamond.is_active():
-                time.sleep(0.5)
-            log.info('2. Diamond Started')
+        self.diamond.start()
+        while not self.diamond.is_active():
+            time.sleep(0.5)
+        log.info('2. Diamond Started')
 
-        if settings.START_GENTRY:
-            self.gentry.start()
-            while not self.gentry.is_active():
-                time.sleep(0.5)
-            log.info('3. Gentry Started')
+        self.gentry.start()
+        while not self.gentry.is_active():
+            time.sleep(0.5)
+        log.info('3. Gentry Started')
 
         # blocking
         while not self.is_active():
@@ -74,15 +70,12 @@ class Warden:
         returns False as soon as anything is not running
         """
 
-        result = True
-
-        if settings.START_GENTRY:
-            result = self.gentry.is_active()
+        result = self.gentry.is_active()
 
         if result:
             result = self.carbon.is_active()
 
-        if settings.START_DIAMOND and result:
+        if result:
             result = self.diamond.is_active()
 
         return result
@@ -94,13 +87,11 @@ class Warden:
 
         log.info('Shutting down Warden..')
 
-        if settings.START_DIAMOND:
-            self.diamond.stop()
-            log.info('3. Diamond Stopped.')
+        self.diamond.stop()
+        log.info('3. Diamond Stopped.')
 
-        if settings.START_GENTRY:
-            self.gentry.stop()
-            log.info('2. Gentry Stopped.')
+        self.gentry.stop()
+        log.info('2. Gentry Stopped.')
 
         self.carbon.stop_daemons()
         log.info('1. Carbon Stopped.')
