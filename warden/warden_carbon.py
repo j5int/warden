@@ -49,7 +49,7 @@ class CarbonManager:
         manager.print_status() # to print the current status of the reactor and app runners
     """
 
-    def __init__(self, carbon_config_file, daemons=[], new_graphite_root=None):
+    def __init__(self, carbon_config_file, new_graphite_root=None):
         """
         Build the storage directory and prepare for Start. The storage directory
         is in the GRAPHITE_ROOT folder which is used by all of the carbon daemons.
@@ -78,34 +78,10 @@ class CarbonManager:
         self.configuration = SafeConfigParser()
         self.configuration.read(self.carbon_config_file)
 
-        self.daemons = daemons
-
-        log.debug("Carbon Daemons = %s" % self.daemons)
-
-
-    def add_daemon(self, program):
-        if reactor.running:                                                     # this is just for sanity, it may be unnecessary
-            raise Exception('Cannot add daemon. Reactor is already running.')
-
-        twistd_options = ["--no_save", "--nodaemon", program]
-
-        if self.carbon_config_file is not None:
-            twistd_options.append('--config=' + self.carbon_config_file)
-
-        config = ServerOptions()
-        config.parseOptions(twistd_options)
-        config['originalname'] = program
-
-        plg = config.loadedPlugins[config.subCommand]
-        ser = plg.makeService(config.subOptions)
-        ser.setServiceParent(self.application_service)
-
-
-    def start_daemons(self):
+    def start(self):
         log.debug("Starting Carbon..")
 
-        from carbon_combined_plugin import CarbonCombinedServiceMaker
-
+        #from carbon_combined_plugin import CarbonCombinedServiceMaker
 
         twistd_options = ["--no_save", "--nodaemon", 'carbon-aggregator']
 
@@ -128,7 +104,7 @@ class CarbonManager:
 
         log.debug("Started Carbon.")
 
-    def stop_daemons(self, remove_pids=True):
+    def stop(self, remove_pids=True):
         if self.reactor_thread.isAlive():
             log.debug("Stopping Carbon..")
 

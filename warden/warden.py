@@ -26,13 +26,13 @@ class Warden:
         log.info('Initialising Warden..')
 
         # initialise Carbon, daemon services are setup here, but the event reactor is not yet run
-        self.carbon = CarbonManager(settings.CARBON_CONFIG, daemons=settings.CARBON_DAEMONS, new_graphite_root=settings.GRAPHITE_ROOT)
+        self.carbon = CarbonManager(settings.CARBON_CONFIG, new_graphite_root=settings.GRAPHITE_ROOT)
 
         # initialise Gentry, this will also perform database manipulation for Sentry
         self.gentry = GentryManager(settings.GENTRY_SETTINGS_MODULE)
 
         # initialise Diamond, not much is required here
-        self.diamond = DiamondManager(settings.DIAMOND_CONFIG)
+        self.diamond = DiamondManager(settings.DIAMOND_CONFIG, settings.DIAMOND_STDOUT_LEVEL)
 
     def startup(self):
         """
@@ -43,7 +43,7 @@ class Warden:
 
         log.info('Starting Warden..')
 
-        self.carbon.start_daemons()
+        self.carbon.start()
         while not self.carbon.is_active():
             time.sleep(0.5)
         log.info('1. Carbon Started')
@@ -93,7 +93,7 @@ class Warden:
         self.gentry.stop()
         log.info('2. Gentry Stopped.')
 
-        self.carbon.stop_daemons()
+        self.carbon.stop()
         log.info('1. Carbon Stopped.')
 
         log.info('Shut down Warden.')

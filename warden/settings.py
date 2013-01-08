@@ -11,6 +11,8 @@ STDOUT_LEVEL = logging.DEBUG
 
 DIAMOND_CONFIG = '/home/benm/.diamond/etc/diamond/diamond.conf'
 
+DIAMOND_STDOUT_LEVEL = logging.ERROR
+
 # GENTRY
 # ----------------
 
@@ -20,9 +22,6 @@ GENTRY_SETTINGS_MODULE = 'gentry.settings'
 # ----------------
 
 GRAPHITE_ROOT = '/home/benm/.graphite'
-
-# 'carbon-cache' , 'carbon-aggregator' or 'carbon-relay'
-CARBON_DAEMONS = ['carbon-cache', 'carbon-aggregator']
 
 CARBON_CONFIG = '/home/benm/.graphite/conf/carbon.conf'
 

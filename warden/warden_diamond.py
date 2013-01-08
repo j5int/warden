@@ -9,7 +9,7 @@ from diamond.server import Server
 
 class DiamondManager:
 
-    def __init__(self, configfile):
+    def __init__(self, configfile, loglevel):
         self.thread = None
         self.config = None
 
@@ -23,17 +23,17 @@ class DiamondManager:
             sys.exit(1)
 
         self.log_diamond = logging.getLogger('diamond')
-        self.log_diamond.setLevel(logging.INFO)
+        self.log_diamond.setLevel(loglevel)
         self.log_diamond.propagate = False
 
 #       LOG to STDOUT
         formatter = logging.Formatter('[%(asctime)s][%(levelname)s][%(message)s]')
         streamHandler = logging.StreamHandler(sys.stdout)
         streamHandler.setFormatter(formatter)
-        streamHandler.setLevel(logging.INFO)
+        streamHandler.setLevel(loglevel)
         self.log_diamond.addHandler(streamHandler)
-        self.log_diamond.disabled = False            # disable this for now, it causes a lot of console spam
-
+        self.log_diamond.disabled = False
+        
     def start(self):
         log.debug("Starting Diamond..")
         self.thread = self.DiamondThread(self.config)
