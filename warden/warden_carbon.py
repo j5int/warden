@@ -42,9 +42,9 @@ class CarbonManager:
     Usage:
         manager = CarbonManager(carbon_directory)
         manager.add_daemon(CarbonManager.CACHE, optional_path_to_config_file)
-        manager.start_daemons()
+        manager.start()
 
-        manager.stop_daemons()
+        manager.stop()
 
         manager.print_status() # to print the current status of the reactor and app runners
     """
@@ -80,8 +80,6 @@ class CarbonManager:
 
     def start(self):
         log.debug("Starting Carbon..")
-
-        #from carbon_combined_plugin import CarbonCombinedServiceMaker
 
         twistd_options = ["--no_save", "--nodaemon", 'carbon-aggregator']
 

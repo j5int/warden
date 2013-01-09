@@ -4,7 +4,7 @@ import logging
 # WARDEN GENERAL
 # ----------------
 
-STDOUT_LEVEL = logging.DEBUG
+STDOUT_LEVEL = logging.INFO
 
 # DIAMOND
 # ----------------
@@ -17,6 +17,7 @@ DIAMOND_STDOUT_LEVEL = logging.ERROR
 # ----------------
 
 GENTRY_SETTINGS_MODULE = 'gentry.settings'
+
 
 # CARBON
 # ----------------

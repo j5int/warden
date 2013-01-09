@@ -6,6 +6,8 @@ from django.core import management
 from django.contrib.auth.hashers import PBKDF2PasswordHasher, get_random_string
 from warden_thread_mon import thread_async_raise
 from warden_logging import log
+import logging
+import sys
 
 class GentryManager:
 
@@ -18,6 +20,34 @@ class GentryManager:
         self.database_path = settings.DATABASES['default']['NAME']
         log.info('database_path is %s' % self.database_path)
         # pull any settings in here if needed
+
+        # hook loggers
+        import graphite.logger
+        self.graphitelog = graphite.logger.log
+
+        formatter = logging.Formatter('[%(asctime)s][%(levelname)s][%(message)s]')
+        streamHandler = logging.StreamHandler(sys.stdout)
+        streamHandler.setFormatter(formatter)
+        streamHandler.setLevel(logging.DEBUG)
+
+        self.graphitelog.infoLogger.addHandler(streamHandler)
+        self.graphitelog.infoLogger.propagate = False
+
+        self.graphitelog.exceptionLogger.addHandler(streamHandler)
+        self.graphitelog.exceptionLogger.propagate = False
+
+        self.graphitelog.cacheLogger.propagate = False
+        if settings.LOG_CACHE_PERFORMANCE:
+            self.graphitelog.cacheLogger.addHandler(streamHandler)
+
+        self.graphitelog.renderingLogger.propagate = False
+        if settings.LOG_RENDERING_PERFORMANCE:
+            self.graphitelog.renderingLogger.addHandler(streamHandler)
+
+        self.graphitelog.metricAccessLogger.propagate = False
+        if settings.LOG_METRIC_ACCESS:
+            self.graphitelog.metricAccessLogger.addHandler(streamHandler)
+
 
         management.execute_from_command_line(['manage.py', 'syncdb','--noinput'])
         management.execute_from_command_line(['manage.py', 'migrate'])
