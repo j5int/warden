@@ -81,14 +81,14 @@ class CarbonManager:
     def start(self):
         log.debug("Starting Carbon..")
 
-        twistd_options = ["--no_save", "--nodaemon", 'carbon-aggregator']
+        twistd_options = ["--no_save", "--nodaemon", 'carbon-combined']
 
         if self.carbon_config_file is not None:
             twistd_options.append('--config=' + self.carbon_config_file)
 
         config = ServerOptions()
         config.parseOptions(twistd_options)
-        config.subCommand = 'carbon-aggregator'
+        config.subCommand = 'carbon-combined'
 
         plg = config.loadedPlugins[config.subCommand]
         self.application_service = plg.makeService(config.subOptions)
@@ -134,42 +134,6 @@ class CarbonManager:
             result = result and waitforsocket('localhost',pickleport, 2, 1, 1)
 
         return result
-
-    def print_status(self):
-        """
-        Prints the reactor status followed by a list of linked applications
-        and any ports or connections that are currently controlled by the
-        reactor.
-        """
-
-        print('Reactor Status:')
-
-        print('  Running: %s' % str(reactor.running))
-        print('  Started: %s' % str(reactor._started))
-        print('  Stopped: %s' % str(reactor._stopped))
-
-        print('%d Application Runners' % len(self.application_runners))
-        for ar in self.application_runners:
-            print('  %s' % ar.config['originalname'])
-
-        readers = reactor.getReaders()
-        listen_ports = [r.port for r in readers if r.__class__.__name__ == 'Port']
-        print('%d Open Ports' % len(listen_ports))
-        for p in listen_ports:
-            print('  %d' % p)
-
-        outbound_connections = [r for r in readers if r.__class__.__name__ == 'Client']
-        print('%d Outbound Connections' % len(outbound_connections))
-        for c in outbound_connections:
-            host = c.getHost()
-            peer = c.getPeer()
-            print('  %s:%d->%s:%d(%s)' % ("localhost", host.port, peer.host, peer.port, peer.type))
-
-        inbound_connections = [r for r in readers if r.__class__.__name__ == 'Server']
-        print('%d Inbound Connections' % len(inbound_connections))
-        for c in inbound_connections:
-            print('  %s:%d<-%s:%d(%s)' % ("localhost", c.server.port, c.client[0], c.client[1], c.server._type))
-
 
     class ReactorThread(threading.Thread):
         def run(self):
