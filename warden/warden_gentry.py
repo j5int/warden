@@ -11,8 +11,8 @@ import sys
 
 class GentryManager:
 
-    def __init__(self, gentry_settings):
-        self.settingsfile = gentry_settings
+    def __init__(self, settings):
+        self.settingsfile = settings.GENTRY_SETTINGS_MODULE
 
         os.environ['DJANGO_SETTINGS_MODULE'] = self.settingsfile
 

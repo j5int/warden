@@ -16,23 +16,19 @@ class Warden:
 
     def __init__(self, settings):
         """
-        Constructor takes arguments:
-        carbon_config_file:             a path to the carbon config file
-        daemons:                        an array of carbon daemons (see warden_carbon for details)
-        gentry_settings_arg:            path to the gentry settings.py module
-        diamond_config_file:            a path to a diamond configuration file
         """
+        self.settings = settings
 
         log.info('Initialising Warden..')
 
         # initialise Carbon, daemon services are setup here, but the event reactor is not yet run
-        self.carbon = CarbonManager(settings.CARBON_CONFIG, new_graphite_root=settings.GRAPHITE_ROOT)
+        self.carbon = CarbonManager(self.settings)
 
         # initialise Gentry, this will also perform database manipulation for Sentry
-        self.gentry = GentryManager(settings.GENTRY_SETTINGS_MODULE)
+        self.gentry = GentryManager(self.settings)
 
         # initialise Diamond, not much is required here
-        self.diamond = DiamondManager(settings.DIAMOND_CONFIG, settings.DIAMOND_STDOUT_LEVEL)
+        self.diamond = DiamondManager(self.settings)
 
     def startup(self):
         """

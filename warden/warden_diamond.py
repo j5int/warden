@@ -9,11 +9,11 @@ from diamond.server import Server
 
 class DiamondManager:
 
-    def __init__(self, configfile, loglevel):
+    def __init__(self, settings):
         self.thread = None
         self.config = None
 
-        configfile = os.path.expanduser(configfile)
+        configfile = os.path.expanduser(settings.DIAMOND_CONFIG)
 
         if os.path.exists(configfile):
             self.config = configobj.ConfigObj(os.path.abspath(configfile))
@@ -23,14 +23,14 @@ class DiamondManager:
             sys.exit(1)
 
         self.log_diamond = logging.getLogger('diamond')
-        self.log_diamond.setLevel(loglevel)
+        self.log_diamond.setLevel(settings.DIAMOND_STDOUT_LEVEL)
         self.log_diamond.propagate = False
 
 #       LOG to STDOUT
         formatter = logging.Formatter('[%(asctime)s][%(levelname)s][%(message)s]')
         streamHandler = logging.StreamHandler(sys.stdout)
         streamHandler.setFormatter(formatter)
-        streamHandler.setLevel(loglevel)
+        streamHandler.setLevel(settings.DIAMOND_STDOUT_LEVEL)
         self.log_diamond.addHandler(streamHandler)
         self.log_diamond.disabled = False
         

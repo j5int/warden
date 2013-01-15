@@ -49,7 +49,7 @@ class CarbonManager:
         manager.print_status() # to print the current status of the reactor and app runners
     """
 
-    def __init__(self, carbon_config_file, new_graphite_root=None):
+    def __init__(self, settings):
         """
         Build the storage directory and prepare for Start. The storage directory
         is in the GRAPHITE_ROOT folder which is used by all of the carbon daemons.
@@ -58,25 +58,31 @@ class CarbonManager:
         """
 
         log.debug("Initialising Carbon")
-        if new_graphite_root is not None:
-            os.environ["GRAPHITE_ROOT"] = new_graphite_root
+
+        # pull variables from settings file
+        if hasattr(settings,'GRAPHITE_ROOT') and settings.GRAPHITE_ROOT is not None:
+            os.environ["GRAPHITE_ROOT"] = settings.GRAPHITE_ROOT
 
         self.GRAPHITE_ROOT = os.environ['GRAPHITE_ROOT']
+        log.debug("GRAPHITE_ROOT = %s" % self.GRAPHITE_ROOT)
 
-        log.debug("$GRAPHITE_ROOT = %s" % self.GRAPHITE_ROOT)
+        if hasattr(settings, 'CARBON_CONFIG') and settings.CARBON_CONFIG is not None:
+            self.carbon_config_file = settings.CARBON_CONFIG
+        else:
+            self.carbon_config_file = os.path.join(self.GRAPHITE_ROOT, 'conf','carbon.conf')
 
+        #read config file, (this may be slightly useless and or unnessesary)
+        self.configuration = SafeConfigParser()
+        self.configuration.read(self.carbon_config_file)
+
+        # make storage dir
         self.STORAGEDIR = os.path.join(self.GRAPHITE_ROOT, 'storage')
         if not os.path.exists(self.STORAGEDIR):
             os.makedirs(self.STORAGEDIR)
 
         self.application_service = service.MultiService()
-
         self.reactor_thread = None
 
-        self.carbon_config_file = carbon_config_file
-
-        self.configuration = SafeConfigParser()
-        self.configuration.read(self.carbon_config_file)
 
     def start(self):
         log.debug("Starting Carbon..")
