@@ -30,13 +30,13 @@ class Warden:
 
         # pull new config values into settings object
         if new_graphite_root is not None:
-            settings.GRAPHITE_ROOT = new_graphite_root
+            self.settings.GRAPHITE_ROOT = new_graphite_root
         if carbon_config_file is not None:
-            settings.CARBON_CONFIG = carbon_config_file
+            self.settings.CARBON_CONFIG = carbon_config_file
         if diamond_config_file is not None:
-            settings.DIAMOND_CONFIG = diamond_config_file
+            self.settings.DIAMOND_CONFIG = diamond_config_file
         if gentry_settings_module is not None:
-            settings.GENTRY_SETTINGS_MODULE = gentry_settings_module
+            self.settings.GENTRY_SETTINGS_MODULE = gentry_settings_module
 
         log.info('Initialising Warden..')
 
@@ -59,23 +59,18 @@ class Warden:
         log.info('Starting Warden..')
 
         self.carbon.start()
-        while not self.carbon.is_active():
-            time.sleep(0.5)
+        self.wait_for_start(self.carbon)
         log.debug('1. Carbon Started')
 
         self.diamond.start()
-        while not self.diamond.is_active():
-            time.sleep(0.5)
+        self.wait_for_start(self.diamond)
         log.debug('2. Diamond Started')
 
         self.gentry.start()
-        while not self.gentry.is_active():
-            time.sleep(0.5)
+        self.wait_for_start(self.gentry)
         log.debug('3. Gentry Started')
 
         # blocking
-        while not self.is_active():
-            time.sleep(0.5)
         log.info('Started Warden.')
 
 
@@ -84,7 +79,6 @@ class Warden:
         A general active state query.
         returns False as soon as anything is not running
         """
-
         result = self.gentry.is_active()
 
         if result:
@@ -94,6 +88,11 @@ class Warden:
             result = self.diamond.is_active()
 
         return result
+
+    def wait_for_start(self, process):
+        while not process.is_active():
+            time.sleep(0.5)
+
 
     def shutdown(self):
         """
@@ -120,7 +119,7 @@ def main():
     try:
         warden.startup()
         while True:
-            time.sleep(100)
+            time.sleep(10)
     except KeyboardInterrupt:
         warden.shutdown()
 
