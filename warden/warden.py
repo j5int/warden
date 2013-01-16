@@ -6,7 +6,7 @@ from warden_carbon import CarbonManager
 from warden_gentry import GentryManager
 from warden_diamond import DiamondManager
 from warden_logging import log
-import settings
+
 
 class Warden:
     """
@@ -14,11 +14,29 @@ class Warden:
     The sub systems all run in separate threads and can be shutdown gracefully using sigint or stop commands.
     """
 
-    def __init__(self, settings):
+    def __init__(self,
+                 new_graphite_root=None,            # does the graphite root variable need to be changed
+                 carbon_config_file=None,           # where are the carbon config files
+                 diamond_config_file=None,          # where is the diamond config file
+                 gentry_settings_module=None        # the name of the gentry settings module
+    ):
         """
-
+        Warden uses values from its default settings file UNLESS explicitely defined
+        here in the constructor.
         """
+        import settings
         self.settings = settings
+
+        # pull new config values into settings object
+        if new_graphite_root is not None:
+            settings.GRAPHITE_ROOT = new_graphite_root
+        if carbon_config_file is not None:
+            settings.CARBON_CONFIG = carbon_config_file
+        if diamond_config_file is not None:
+            settings.DIAMOND_CONFIG = diamond_config_file
+        if gentry_settings_module is not None:
+            settings.GENTRY_SETTINGS_MODULE = gentry_settings_module
+
 
         log.info('Initialising Warden..')
 
@@ -99,7 +117,7 @@ class Warden:
 def main():
 
 
-    warden = Warden(settings)
+    warden = Warden()
 
     try:
 

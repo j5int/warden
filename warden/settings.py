@@ -23,6 +23,7 @@ GENTRY_SETTINGS_MODULE = 'gentry.settings'
 
 GRAPHITE_ROOT = '/home/benm/.graphite'
 
+# the path to the carbon config is derived from the GRAPHITE_ROOT unless defined here
 CARBON_CONFIG = '/home/benm/.graphite/conf/carbon.conf'
 
 # windows overrides
