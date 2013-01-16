@@ -20,13 +20,13 @@ class DiamondManager:
             self.config = configobj.ConfigObj(configfile)
             self.config['configfile'] = configfile
 
-            self.ensure_path(self.config['server'],'pid_file', 'diamond.pid')
+            self.ensure_path(self.config['server'],'pid_file', os.path.join('diamond.pid'))
 
-            self.ensure_path(self.config['server'],'collectors_path', 'collectors','collectors')
+            self.ensure_path(self.config['server'],'collectors_path', os.path.join('collectors','collectors'))
 
-            self.ensure_path(self.config['server'],'collectors_config_path', 'collectors','config')
+            self.ensure_path(self.config['server'],'collectors_config_path', os.path.join('collectors','config'))
 
-            self.ensure_path(self.config['server'],'handlers_config_path', 'handlers')
+            self.ensure_path(self.config['server'],'handlers_config_path', os.path.join('handlers'))
 
         else:
             print >> sys.stderr, "ERROR: Config file: %s does not exist." % configfile
@@ -44,11 +44,11 @@ class DiamondManager:
         self.log_diamond.addHandler(streamHandler)
         self.log_diamond.disabled = False
 
-    def ensure_path(self, section, var, *args):
+    def ensure_path(self, section, var, path_tail):
         if not var in section:
             try:
                 dr = os.environ['DIAMOND_ROOT']
-                section[var] = os.path.join(dr, args)
+                section[var] = os.path.join(dr, path_tail)
             except KeyError:
                 print 'ERROR: Diamond missing path configuration %s[%s] AND $DIAMOND_ROOT has not been set!' % (section, var)
                 exit(1)
