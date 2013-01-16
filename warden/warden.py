@@ -120,7 +120,6 @@ def main():
     warden = Warden()
 
     try:
-
         warden.startup()
         while True:
             time.sleep(100)

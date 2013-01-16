@@ -4,6 +4,7 @@ import configobj
 import threading
 from warden_logging import log
 import logging
+from warden_utils import normalize_path
 
 from diamond.server import Server
 
@@ -13,7 +14,7 @@ class DiamondManager:
         self.thread = None
         self.config = None
 
-        configfile = os.path.expanduser(settings.DIAMOND_CONFIG)
+        configfile = normalize_path(settings.DIAMOND_CONFIG)
 
         if os.path.exists(configfile):
             self.config = configobj.ConfigObj(os.path.abspath(configfile))

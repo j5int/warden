@@ -1,6 +1,6 @@
 import os
 import threading
-from warden_utils import waitforsocket
+from warden_utils import waitforsocket, normalize_path
 from warden_logging import log
 from ConfigParser import SafeConfigParser
 
@@ -61,13 +61,13 @@ class CarbonManager:
 
         # pull variables from settings file
         if hasattr(settings,'GRAPHITE_ROOT') and settings.GRAPHITE_ROOT is not None:
-            os.environ["GRAPHITE_ROOT"] = settings.GRAPHITE_ROOT
+            os.environ["GRAPHITE_ROOT"] = normalize_path(settings.GRAPHITE_ROOT)
 
         self.GRAPHITE_ROOT = os.environ['GRAPHITE_ROOT']
         log.debug("GRAPHITE_ROOT = %s" % self.GRAPHITE_ROOT)
 
         if hasattr(settings, 'CARBON_CONFIG') and settings.CARBON_CONFIG is not None:
-            self.carbon_config_file = settings.CARBON_CONFIG
+            self.carbon_config_file = normalize_path(settings.CARBON_CONFIG)
         else:
             self.carbon_config_file = os.path.join(self.GRAPHITE_ROOT, 'conf','carbon.conf')
 
