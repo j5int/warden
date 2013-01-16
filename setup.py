@@ -41,7 +41,7 @@ Finally, there is an API that can be used by the monitored application to publis
           'gentry==0.0.1'],
     dependency_links = [
         'http://github.com/Supy/gentry/tarball/master#gentry-0.0.1',
-        'http://github.com/Supy/carbon/tarball/0.9.x-win#carbon-0.9.10'
+        'http://github.com/AstromechZA/carbon/tarball/0.9.x-win#carbon-0.9.10'
     ],
     keywords         = 'sentry carbon graphite monitoring',
     url              = 'https://github.com/matthewhampton/warden',

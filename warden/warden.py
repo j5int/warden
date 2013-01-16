@@ -25,6 +25,7 @@ class Warden:
         here in the constructor.
         """
         import settings
+
         self.settings = settings
 
         # pull new config values into settings object
@@ -36,7 +37,6 @@ class Warden:
             settings.DIAMOND_CONFIG = diamond_config_file
         if gentry_settings_module is not None:
             settings.GENTRY_SETTINGS_MODULE = gentry_settings_module
-
 
         log.info('Initialising Warden..')
 
@@ -115,8 +115,6 @@ class Warden:
 
 
 def main():
-
-
     warden = Warden()
 
     try:

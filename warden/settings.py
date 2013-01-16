@@ -9,7 +9,7 @@ STDOUT_LEVEL = logging.INFO
 # DIAMOND
 # ----------------
 
-DIAMOND_CONFIG = '/home/benm/.diamond/etc/diamond/diamond.conf'
+DIAMOND_CONFIG = '~/.diamond/etc/diamond/diamond.conf'
 
 DIAMOND_STDOUT_LEVEL = logging.ERROR
 
@@ -21,10 +21,10 @@ GENTRY_SETTINGS_MODULE = 'gentry.settings'
 # CARBON
 # ----------------
 
-GRAPHITE_ROOT = '/home/benm/.graphite'
+GRAPHITE_ROOT = '~/.graphite'
 
 # the path to the carbon config is derived from the GRAPHITE_ROOT unless defined here
-CARBON_CONFIG = '/home/benm/.graphite/conf/carbon.conf'
+CARBON_CONFIG = '~/.graphite/conf/carbon.conf'
 
 # windows overrides
 
