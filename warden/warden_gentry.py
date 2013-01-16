@@ -12,9 +12,9 @@ import sys
 class GentryManager:
 
     def __init__(self, settings):
-        self.settingsfile = settings.GENTRY_SETTINGS_MODULE
+        self.settingsmodule = settings.GENTRY_SETTINGS_MODULE
 
-        os.environ['DJANGO_SETTINGS_MODULE'] = self.settingsfile
+        os.environ['DJANGO_SETTINGS_MODULE'] = self.settingsmodule
 
         from django.conf import settings
         self.database_path = settings.DATABASES['default']['NAME']

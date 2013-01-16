@@ -17,10 +17,11 @@ class DiamondManager:
         configfile = normalize_path(settings.DIAMOND_CONFIG)
 
         if os.path.exists(configfile):
-            self.config = configobj.ConfigObj(os.path.abspath(configfile))
-            self.config['configfile'] = configfile
+            self.config = self.build_configObj(configfile)
+
+
         else:
-            print >> sys.stderr, "ERROR: Config file: %s does not exist." % (configfile)
+            print >> sys.stderr, "ERROR: Config file: %s does not exist." % configfile
             sys.exit(1)
 
         self.log_diamond = logging.getLogger('diamond')
@@ -34,7 +35,30 @@ class DiamondManager:
         streamHandler.setLevel(settings.DIAMOND_STDOUT_LEVEL)
         self.log_diamond.addHandler(streamHandler)
         self.log_diamond.disabled = False
-        
+
+
+    def build_configObj(self, config_path):
+        config = configobj.ConfigObj(config_path)
+        config['configfile'] = config_path
+
+        dr = os.environ['DIAMOND_ROOT']
+
+        self.ensure_var(config['server'],'pidfile', os.path.join(dr,'diamond.pid'))
+
+        self.ensure_var(config['server'],'collectors_path', os.path.join(dr,'collectors'))
+
+        self.ensure_var(config['server'],'collectors_config_path', os.path.join(dr,'collectors','config'))
+
+        self.ensure_var(config['server'],'handlers_config_path', os.path.join(dr,'handlers'))
+
+        return config
+
+    def ensure_var(self, d, v, c):
+        if d is None:
+            return
+        if d[v] is None:
+            d[v] = c
+
     def start(self):
         log.debug("Starting Diamond..")
         self.thread = self.DiamondThread(self.config)
@@ -55,7 +79,7 @@ class DiamondManager:
         if not self.thread:
             return False
 
-        return self.thread.isAlive()
+        return self.thread.server.running
 
     class DiamondThread(threading.Thread):
 
@@ -68,4 +92,5 @@ class DiamondManager:
 
         def stop(self):
             self.server.stop()
+
 
