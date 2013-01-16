@@ -18,7 +18,6 @@ DIAMOND_STDOUT_LEVEL = logging.ERROR
 
 GENTRY_SETTINGS_MODULE = 'gentry.settings'
 
-
 # CARBON
 # ----------------
 
@@ -29,5 +28,6 @@ CARBON_CONFIG = '/home/benm/.graphite/conf/carbon.conf'
 # windows overrides
 
 if platform.system() == 'Windows':
+    GRAPHITE_ROOT = 'C:\\Graphite'
     CARBON_CONFIG = 'C:\\Graphite\\conf\\carbon.conf'
     DIAMOND_CONFIG = 'C:\\.diamond\\diamond.conf'

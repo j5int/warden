@@ -16,6 +16,7 @@ class Warden:
 
     def __init__(self, settings):
         """
+
         """
         self.settings = settings
 
@@ -42,17 +43,17 @@ class Warden:
         self.carbon.start()
         while not self.carbon.is_active():
             time.sleep(0.5)
-        log.info('1. Carbon Started')
+        log.debug('1. Carbon Started')
 
         self.diamond.start()
         while not self.diamond.is_active():
             time.sleep(0.5)
-        log.info('2. Diamond Started')
+        log.debug('2. Diamond Started')
 
         self.gentry.start()
         while not self.gentry.is_active():
             time.sleep(0.5)
-        log.info('3. Gentry Started')
+        log.debug('3. Gentry Started')
 
         # blocking
         while not self.is_active():
@@ -84,13 +85,13 @@ class Warden:
         log.info('Shutting down Warden..')
 
         self.diamond.stop()
-        log.info('3. Diamond Stopped.')
+        log.debug('3. Diamond Stopped.')
 
         self.gentry.stop()
-        log.info('2. Gentry Stopped.')
+        log.debug('2. Gentry Stopped.')
 
         self.carbon.stop()
-        log.info('1. Carbon Stopped.')
+        log.debug('1. Carbon Stopped.')
 
         log.info('Shut down Warden.')
 
@@ -104,7 +105,7 @@ def main():
 
         warden.startup()
         while True:
-            time.sleep(10)
+            time.sleep(100)
     except KeyboardInterrupt:
         warden.shutdown()
 
