@@ -17,8 +17,16 @@ class DiamondManager:
         configfile = normalize_path(settings.DIAMOND_CONFIG)
 
         if os.path.exists(configfile):
-            self.config = self.build_configObj(configfile)
+            self.config = configobj.ConfigObj(configfile)
+            self.config['configfile'] = configfile
 
+            self.ensure_path(self.config['server'],'pid_file', 'diamond.pid')
+
+            self.ensure_path(self.config['server'],'collectors_path', 'collectors','collectors')
+
+            self.ensure_path(self.config['server'],'collectors_config_path', 'collectors','config')
+
+            self.ensure_path(self.config['server'],'handlers_config_path', 'handlers')
 
         else:
             print >> sys.stderr, "ERROR: Config file: %s does not exist." % configfile
@@ -36,28 +44,14 @@ class DiamondManager:
         self.log_diamond.addHandler(streamHandler)
         self.log_diamond.disabled = False
 
-
-    def build_configObj(self, config_path):
-        config = configobj.ConfigObj(config_path)
-        config['configfile'] = config_path
-
-        dr = os.environ['DIAMOND_ROOT']
-
-        self.ensure_var(config['server'],'pidfile', os.path.join(dr,'diamond.pid'))
-
-        self.ensure_var(config['server'],'collectors_path', os.path.join(dr,'collectors'))
-
-        self.ensure_var(config['server'],'collectors_config_path', os.path.join(dr,'collectors','config'))
-
-        self.ensure_var(config['server'],'handlers_config_path', os.path.join(dr,'handlers'))
-
-        return config
-
-    def ensure_var(self, d, v, c):
-        if d is None:
-            return
-        if d[v] is None:
-            d[v] = c
+    def ensure_path(self, section, var, *args):
+        if not var in section:
+            try:
+                dr = os.environ['DIAMOND_ROOT']
+                section[var] = os.path.join(dr, args)
+            except KeyError:
+                print 'ERROR: Diamond missing path configuration %s[%s] AND $DIAMOND_ROOT has not been set!' % (section, var)
+                exit(1)
 
     def start(self):
         log.debug("Starting Diamond..")
