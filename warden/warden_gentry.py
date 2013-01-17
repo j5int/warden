@@ -53,6 +53,7 @@ class GentryManager:
         management.execute_from_command_line(['manage.py', 'migrate'])
         self.add_superuser('admin@admin.com', 'admin','admin')
 
+
         self.thread = self.GentryServerThread()
 
 
@@ -100,6 +101,7 @@ class GentryManager:
             log.error("Can't stop Gentry if it has not started.")
 
     def is_active(self):
+
         if not self.thread.isAlive(): return False
         return True
 
@@ -110,17 +112,26 @@ class GentryManager:
             self.server = None
 
         def run(self):
-                
-            from gentry import settings
+
+            # name of the module to import "something.something.something.something"
+            n = os.environ['DJANGO_SETTINGS_MODULE']
+
+            # import the string as a module
+            s = __import__(n)
+            # jump down the python path of the module to get the actual context for settings
+            for p in n.split(".")[1:]:
+                s = getattr(s, p)
+
             from gentry.wsgi import application
             from cherrypy import wsgiserver
 
-            host = settings.SENTRY_WEB_HOST
-            port = settings.SENTRY_WEB_PORT
+            host = s.SENTRY_WEB_HOST
+            port = s.SENTRY_WEB_PORT
 
             self.server = wsgiserver.CherryPyWSGIServer((host, port), application)
 
             log.debug("Starting CherryPy server on %s:%s" % (host, port))
+
             self.server.start()
 
         def stop(self):

@@ -17,3 +17,7 @@ def normalize_path(path):
     path = os.path.expanduser(path)
     path = os.path.abspath(path)
     return path
+
+def StartupException(Exception):
+    pass
+

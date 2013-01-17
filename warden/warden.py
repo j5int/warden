@@ -6,7 +6,8 @@ from warden_carbon import CarbonManager
 from warden_gentry import GentryManager
 from warden_diamond import DiamondManager
 from warden_logging import log
-
+from warden_utils import StartupException
+import traceback
 
 class Warden:
     """
@@ -39,15 +40,18 @@ class Warden:
             self.settings.GENTRY_SETTINGS_MODULE = gentry_settings_module
 
         log.info('Initialising Warden..')
+        try:
+            # initialise Carbon, daemon services are setup here, but the event reactor is not yet run
+            self.carbon = CarbonManager(self.settings)
 
-        # initialise Carbon, daemon services are setup here, but the event reactor is not yet run
-        self.carbon = CarbonManager(self.settings)
+            # initialise Gentry, this will also perform database manipulation for Sentry
+            self.gentry = GentryManager(self.settings)
 
-        # initialise Gentry, this will also perform database manipulation for Sentry
-        self.gentry = GentryManager(self.settings)
-
-        # initialise Diamond, not much is required here
-        self.diamond = DiamondManager(self.settings)
+            # initialise Diamond, not much is required here
+            self.diamond = DiamondManager(self.settings)
+        except Exception, e:
+            log.exception("An error occured during initialisation.")
+            sys.exit(1)
 
     def startup(self):
         """
@@ -57,22 +61,23 @@ class Warden:
         """
 
         log.info('Starting Warden..')
+        try:
+            self.carbon.start()
+            self.wait_for_start(self.carbon)
+            log.debug('1. Carbon Started')
 
-        self.carbon.start()
-        self.wait_for_start(self.carbon)
-        log.debug('1. Carbon Started')
+            self.diamond.start()
+            self.wait_for_start(self.diamond)
+            log.debug('2. Diamond Started')
 
-        self.diamond.start()
-        self.wait_for_start(self.diamond)
-        log.debug('2. Diamond Started')
+            self.gentry.start()
+            self.wait_for_start(self.gentry)
+            log.debug('3. Gentry Started')
 
-        self.gentry.start()
-        self.wait_for_start(self.gentry)
-        log.debug('3. Gentry Started')
-
-        # blocking
-        log.info('Started Warden.')
-
+            # blocking
+            log.info('Started Warden.')
+        except Exception as e:
+            raise StartupException(e)
 
     def is_active(self):
         """
@@ -121,6 +126,12 @@ def main():
         while True:
             time.sleep(10)
     except KeyboardInterrupt:
+        warden.shutdown()
+    except StartupException as e:
+        log.exception("An error occured during startup.")
+        warden.shutdown()
+    except Exception as e:
+        log.exception("An error occured while running.")
         warden.shutdown()
 
 

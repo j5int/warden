@@ -50,7 +50,7 @@ class DiamondManager:
                 dr = os.environ['DIAMOND_ROOT']
                 section[var] = os.path.join(dr, path_tail)
             except KeyError:
-                print 'ERROR: Diamond missing path configuration %s[%s] AND $DIAMOND_ROOT has not been set!' % (section, var)
+                print 'ERROR: Diamond missing path configuration [%s] AND $DIAMOND_ROOT has not been set!' % var
                 exit(1)
 
     def start(self):
