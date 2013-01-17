@@ -127,9 +127,7 @@ class GentryManager:
             self.server = wsgiserver.CherryPyWSGIServer((self.host, self.port), application)
 
         def run(self):
-
             log.debug("Starting CherryPy server on %s:%s" % (self.host, self.port))
-
             self.server.start()
 
         def stop(self):

@@ -79,6 +79,10 @@ class Warden:
         except Exception as e:
             raise StartupException(e)
 
+    def wait_for_start(self, process):
+        while not process.is_active():
+            time.sleep(0.5)
+
     def is_active(self):
         """
         A general active state query.
@@ -93,11 +97,6 @@ class Warden:
             result = self.diamond.is_active()
 
         return result
-
-    def wait_for_start(self, process):
-        while not process.is_active():
-            time.sleep(0.5)
-
 
     def shutdown(self):
         """
@@ -117,22 +116,27 @@ class Warden:
 
         log.info('Shut down Warden.')
 
+    def run(self):
+        try:
+            self.startup()
+            while True:
+                time.sleep(5)
+
+
+        except KeyboardInterrupt:
+            log.info("Keyboard interrupt received.")
+            self.shutdown()
+        except StartupException as e:
+            log.exception("An error occured during startup.")
+            self.shutdown()
+        except Exception as e:
+            log.exception("An error occured while running.")
+            self.shutdown()
 
 def main():
     warden = Warden()
 
-    try:
-        warden.startup()
-        while True:
-            time.sleep(10)
-    except KeyboardInterrupt:
-        warden.shutdown()
-    except StartupException as e:
-        log.exception("An error occured during startup.")
-        warden.shutdown()
-    except Exception as e:
-        log.exception("An error occured while running.")
-        warden.shutdown()
+    warden.run()
 
 
 if __name__ == '__main__':
