@@ -109,10 +109,6 @@ class GentryManager:
 
         def __init__(self):
             threading.Thread.__init__(self)
-            self.server = None
-
-        def run(self):
-
             # name of the module to import "something.something.something.something"
             n = os.environ['DJANGO_SETTINGS_MODULE']
 
@@ -125,12 +121,14 @@ class GentryManager:
             from gentry.wsgi import application
             from cherrypy import wsgiserver
 
-            host = s.SENTRY_WEB_HOST
-            port = s.SENTRY_WEB_PORT
+            self.host = s.SENTRY_WEB_HOST
+            self.port = s.SENTRY_WEB_PORT
 
-            self.server = wsgiserver.CherryPyWSGIServer((host, port), application)
+            self.server = wsgiserver.CherryPyWSGIServer((self.host, self.port), application)
 
-            log.debug("Starting CherryPy server on %s:%s" % (host, port))
+        def run(self):
+
+            log.debug("Starting CherryPy server on %s:%s" % (self.host, self.port))
 
             self.server.start()
 
