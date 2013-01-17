@@ -116,7 +116,7 @@ class Warden:
 
         log.info('Shut down Warden.')
 
-    def run(self):
+    def start(self):
         try:
             self.startup()
             while True:
@@ -136,7 +136,7 @@ class Warden:
 def main():
     warden = Warden()
 
-    warden.run()
+    warden.start()
 
 
 if __name__ == '__main__':
