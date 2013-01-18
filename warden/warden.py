@@ -1,12 +1,10 @@
-import os
 import sys
 import time
-import platform
 from warden_carbon import CarbonManager
 from warden_gentry import GentryManager
 from warden_diamond import DiamondManager
 from warden_logging import log
-from warden_utils import StartupException, ShutdownException
+from warden_utils import StartupException
 import datetime
 
 class Warden:
@@ -51,7 +49,7 @@ class Warden:
 
             # initialise Diamond, not much is required here
             self.diamond = DiamondManager(self.settings)
-        except Exception, e:
+        except Exception:
             log.exception("An error occured during initialisation.")
             sys.exit(1)
 
@@ -79,7 +77,10 @@ class Warden:
             # blocking
             log.info('Started Warden.')
             self.startuptime = datetime.datetime.now()
-        except Exception as e:
+
+            1/0
+
+        except Exception, e:
             raise StartupException(e)
 
     def wait_for_start(self, process):
@@ -145,10 +146,10 @@ class Warden:
         except KeyboardInterrupt:
             log.info("Keyboard interrupt received.")
             self.shutdown()
-        except StartupException as e:
+        except StartupException:
             log.exception("An error occured during startup.")
             self.shutdown()
-        except Exception as e:
+        except Exception:
             log.exception("An error occured while running.")
             self.shutdown()
 

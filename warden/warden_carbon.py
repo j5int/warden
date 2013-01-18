@@ -20,7 +20,6 @@ try:
 except Exception as e:
     print('Missing required dependency: Twisted=11.10.1')
     exit(1)
-import pprint
 from twisted.scripts.twistd import ServerOptions
 from twisted.application import  service
 from twisted.python.runtime import platformType
@@ -135,10 +134,8 @@ class CarbonManager:
 
         if not self.reactor_thread.isAlive(): return False
 
-        for service in self.application_service.services:
-            dtype = 'aggregator'
-            pickleport = self.configuration.get(dtype,'PICKLE_RECEIVER_PORT')
-            result = result and waitforsocket('localhost',pickleport, 2, 1, 1)
+        pickleport = self.configuration.get('combined','AGGREGATOR_PICKLE_RECEIVER_PORT')
+        result = result and waitforsocket('localhost',pickleport, 2, 1, 1)
 
         return result
 

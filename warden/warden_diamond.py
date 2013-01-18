@@ -5,7 +5,7 @@ import threading
 from warden_logging import log
 import logging
 from warden_utils import normalize_path
-
+import time
 from diamond.server import Server
 
 class DiamondManager:
@@ -76,6 +76,7 @@ class DiamondManager:
             self.server.run()
 
         def stop(self):
+            time.sleep(1)
             self.server.stop()
 
 

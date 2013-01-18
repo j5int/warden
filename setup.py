@@ -33,12 +33,15 @@ Finally, there is an API that can be used by the monitored application to publis
 """,
     author           = 'Matthew Hampton',
     author_email     = 'support@sjsoft.com',
-    packages         = ['warden', 'warden.test'],
-    package_data     = {'warden.test' : ['conf/*.*']},
+    packages         = ['warden'],
     install_requires = [
           'whisper==0.9.10',
           'carbon==0.9.10',
-          'gentry==0.0.1'],
+          'gentry==0.0.1',
+          'twisted',
+          'graphite-web',
+          'configobj',
+          'diamond'],
     dependency_links = [
         'http://github.com/Supy/gentry/tarball/master#gentry-0.0.1',
         'http://github.com/AstromechZA/carbon/tarball/0.9.x-win#carbon-0.9.10'

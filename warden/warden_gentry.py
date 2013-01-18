@@ -4,7 +4,6 @@ import datetime
 import threading
 from django.core import management
 from django.contrib.auth.hashers import PBKDF2PasswordHasher, get_random_string
-from warden_thread_mon import thread_async_raise
 from warden_logging import log
 import logging
 import sys
@@ -19,7 +18,7 @@ class GentryManager:
         if self.settingsmodulepath is None:
             os.environ['DJANGO_SETTINGS_MODULE'] = 'gentry.settings'
         else:
-            gmod = imp.load_source('j5_warden_gentry_settings', warden_utils.normalize_path(self.settingsmodulepath))
+            imp.load_source('j5_warden_gentry_settings', warden_utils.normalize_path(self.settingsmodulepath))
             os.environ['DJANGO_SETTINGS_MODULE'] = 'j5_warden_gentry_settings'
 
         log.debug('$DJANGO_SETTINGS_MODULE = %s' % os.environ['DJANGO_SETTINGS_MODULE'])
@@ -69,7 +68,7 @@ class GentryManager:
 
         hasher = PBKDF2PasswordHasher()
         salt = get_random_string()
-        phash = hasher.encode(user, salt)
+        phash = hasher.encode(password, salt)
 
         dtime = datetime.datetime.now()
 
