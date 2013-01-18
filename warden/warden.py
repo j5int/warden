@@ -17,7 +17,9 @@ class Warden:
                  new_graphite_root=None,            # does the graphite root variable need to be changed
                  carbon_config_file=None,           # where are the carbon config files
                  diamond_config_file=None,          # where is the diamond config file
-                 gentry_settings_module=None        # the name of the gentry settings module
+                 gentry_settings_module=None,       # the name of the gentry settings module
+                 sentry_key_file=None               # a path to a file containing the sentry private key (?) this
+                                                    # this overrides the value in the gentry_settings_module
     ):
         """
         Warden uses values from its default settings file UNLESS explicitely defined
@@ -38,6 +40,8 @@ class Warden:
             self.settings.DIAMOND_CONFIG = diamond_config_file
         if gentry_settings_module is not None:
             self.settings.GENTRY_SETTINGS_MODULE = gentry_settings_module
+        if sentry_key_file is not None:
+            self.settings.SENTRY_KEY_FILE = sentry_key_file
 
         log.info('Initialising Warden..')
         try:
@@ -77,8 +81,6 @@ class Warden:
             # blocking
             log.info('Started Warden.')
             self.startuptime = datetime.datetime.now()
-
-            1/0
 
         except Exception, e:
             raise StartupException(e)

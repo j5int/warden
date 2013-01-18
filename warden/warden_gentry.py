@@ -18,10 +18,36 @@ class GentryManager:
         if self.settingsmodulepath is None:
             os.environ['DJANGO_SETTINGS_MODULE'] = 'gentry.settings'
         else:
-            imp.load_source('j5_warden_gentry_settings', warden_utils.normalize_path(self.settingsmodulepath))
             os.environ['DJANGO_SETTINGS_MODULE'] = 'j5_warden_gentry_settings'
+            imp.load_source('j5_warden_gentry_settings', warden_utils.normalize_path(self.settingsmodulepath))
 
-        log.debug('$DJANGO_SETTINGS_MODULE = %s' % os.environ['DJANGO_SETTINGS_MODULE'])
+        n = os.environ['DJANGO_SETTINGS_MODULE']
+        # import the string as a module
+        s = __import__(n)
+
+        # if there is a settings file value, that must be read and put into the settings module
+        if settings.SENTRY_KEY_FILE is not None:
+            path = warden_utils.normalize_path(settings.SENTRY_KEY_FILE)
+            log.debug("Overriding SENTRY_KEY from %s" % path)
+            try:
+                # read the key from the file
+                f = open(path)
+                key = f.readline().strip()
+                f.close()
+
+                if key == '':
+                    log.error("Keyfile is empty, resorting to default")
+                else:
+                    # jump down the python path of the module to get the actual context for settings
+                    for p in n.split(".")[1:]:
+                        s = getattr(s, p)
+
+                    s.SENTRY_KEY = key
+
+            except IOError:
+                log.error("Could not read overriding SENTRY_KEY_FILE")
+
+        log.debug('$DJANGO_SETTINGS_MODULE = %s' % n)
 
         from django.conf import settings
         self.database_path = settings.DATABASES['default']['NAME']
@@ -129,10 +155,12 @@ class GentryManager:
             self.host = s.SENTRY_WEB_HOST
             self.port = s.SENTRY_WEB_PORT
 
+            self.key = s.SENTRY_KEY
+
             self.server = wsgiserver.CherryPyWSGIServer((self.host, self.port), application)
 
         def run(self):
-            log.debug("Starting CherryPy server on %s:%s" % (self.host, self.port))
+            log.debug("Starting CherryPy server on %s:%s with key '%s'" % (self.host, self.port, self.key))
             self.server.start()
 
         def stop(self):
