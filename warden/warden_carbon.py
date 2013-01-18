@@ -128,6 +128,7 @@ class CarbonManager:
                 log.debug("Removing old pidfile %s" % pidfile)
                 os.remove(pidfile)
 
+
     def is_active(self):
 
         result = True

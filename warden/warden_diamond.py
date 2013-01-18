@@ -19,15 +19,6 @@ class DiamondManager:
         if os.path.exists(configfile):
             self.config = configobj.ConfigObj(configfile)
             self.config['configfile'] = configfile
-
-            self.ensure_path(self.config['server'],'pid_file', os.path.join('diamond.pid'))
-
-            self.ensure_path(self.config['server'],'collectors_path', os.path.join('collectors','collectors'))
-
-            self.ensure_path(self.config['server'],'collectors_config_path', os.path.join('collectors','config'))
-
-            self.ensure_path(self.config['server'],'handlers_config_path', os.path.join('handlers'))
-
         else:
             print >> sys.stderr, "ERROR: Config file: %s does not exist." % configfile
             sys.exit(1)

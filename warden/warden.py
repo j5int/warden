@@ -6,7 +6,7 @@ from warden_carbon import CarbonManager
 from warden_gentry import GentryManager
 from warden_diamond import DiamondManager
 from warden_logging import log
-from warden_utils import StartupException
+from warden_utils import StartupException, ShutdownException
 import traceback
 
 class Warden:
@@ -104,15 +104,23 @@ class Warden:
         """
 
         log.info('Shutting down Warden..')
+        try:
+            self.diamond.stop()
+            log.debug('3. Diamond Stopped.')
+        except Exception:
+            log.exception("An error occured while shutting down Diamond")
 
-        self.diamond.stop()
-        log.debug('3. Diamond Stopped.')
+        try:
+            self.gentry.stop()
+            log.debug('2. Gentry Stopped.')
+        except Exception:
+            log.exception("An error occured while shutting down Gentry")
 
-        self.gentry.stop()
-        log.debug('2. Gentry Stopped.')
-
-        self.carbon.stop()
-        log.debug('1. Carbon Stopped.')
+        try:
+            self.carbon.stop()
+            log.debug('1. Carbon Stopped.')
+        except Exception:
+            log.exception("An error occured while shutting down Carbon")
 
         log.info('Shut down Warden.')
 
@@ -121,7 +129,11 @@ class Warden:
             self.startup()
             while True:
                 time.sleep(5)
-
+                if not self.is_active():
+                    log.error("Something caused one of the services to stop!")
+                    break
+                # need some way to pickup errors at runtime. should check after each sleep whether any of the
+                # services have picked up an error
 
         except KeyboardInterrupt:
             log.info("Keyboard interrupt received.")

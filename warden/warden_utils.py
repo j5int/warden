@@ -21,3 +21,5 @@ def normalize_path(path):
 def StartupException(Exception):
     pass
 
+def ShutdownException(Exception):
+    pass
