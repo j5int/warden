@@ -8,13 +8,21 @@ from warden_thread_mon import thread_async_raise
 from warden_logging import log
 import logging
 import sys
+import warden_utils
+import imp
 
 class GentryManager:
 
     def __init__(self, settings):
-        self.settingsmodule = settings.GENTRY_SETTINGS_MODULE
+        self.settingsmodulepath = settings.GENTRY_SETTINGS_PATH
 
-        os.environ['DJANGO_SETTINGS_MODULE'] = self.settingsmodule
+        if self.settingsmodulepath is None:
+            os.environ['DJANGO_SETTINGS_MODULE'] = 'gentry.settings'
+        else:
+            gmod = imp.load_source('j5_warden_gentry_settings', warden_utils.normalize_path(self.settingsmodulepath))
+            os.environ['DJANGO_SETTINGS_MODULE'] = 'j5_warden_gentry_settings'
+
+        log.debug('$DJANGO_SETTINGS_MODULE = %s' % os.environ['DJANGO_SETTINGS_MODULE'])
 
         from django.conf import settings
         self.database_path = settings.DATABASES['default']['NAME']
@@ -87,23 +95,21 @@ class GentryManager:
                 conn.close()
 
     def start(self):
-        log.debug("Starting Gentry..")
         self.thread.start()
-        log.debug("Started Gentry.")
 
     def stop(self):
         if self.thread.isAlive():
-            log.debug("Stopping Gentry..")
             self.thread.stop()
             self.thread.join()
-            log.debug("Stopped Gentry.")
         else:
             log.error("Can't stop Gentry if it has not started.")
 
     def is_active(self):
 
         if not self.thread.isAlive(): return False
-        return True
+
+        return self.thread.server.ready
+
 
     class GentryServerThread(threading.Thread):
 

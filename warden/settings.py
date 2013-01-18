@@ -4,7 +4,7 @@ import logging
 # WARDEN GENERAL
 # ----------------
 
-STDOUT_LEVEL = logging.INFO
+STDOUT_LEVEL = logging.DEBUG
 
 # DIAMOND
 # ----------------
@@ -16,7 +16,7 @@ DIAMOND_STDOUT_LEVEL = logging.ERROR
 # GENTRY
 # ----------------
 
-GENTRY_SETTINGS_MODULE = 'gentry.settings'
+GENTRY_SETTINGS_PATH = '~/work/venvs/gentrytest/lib/python2.7/site-packages/gentry-0.0.1-py2.7.egg/gentry/settings.py'
 
 # CARBON
 # ----------------
