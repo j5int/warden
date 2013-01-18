@@ -26,7 +26,7 @@ class GentryManager:
         s = __import__(n)
 
         # if there is a settings file value, that must be read and put into the settings module
-        if settings.SENTRY_KEY_FILE is not None:
+        if hasattr(settings, 'SENTRY_KEY_FILE') and settings.SENTRY_KEY_FILE is not None:
             path = warden_utils.normalize_path(settings.SENTRY_KEY_FILE)
             log.debug("Overriding SENTRY_KEY from %s" % path)
             try:
