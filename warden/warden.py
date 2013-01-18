@@ -7,7 +7,7 @@ from warden_gentry import GentryManager
 from warden_diamond import DiamondManager
 from warden_logging import log
 from warden_utils import StartupException, ShutdownException
-import traceback
+import datetime
 
 class Warden:
     """
@@ -28,6 +28,8 @@ class Warden:
         import settings
 
         self.settings = settings
+        self.startuptime = None
+        self.shutdowntime = None
 
         # pull new config values into settings object
         if new_graphite_root is not None:
@@ -76,6 +78,7 @@ class Warden:
 
             # blocking
             log.info('Started Warden.')
+            self.startuptime = datetime.datetime.now()
         except Exception as e:
             raise StartupException(e)
 
@@ -102,6 +105,10 @@ class Warden:
         """
         Shutdown in order, some threading may be wrong here, make sure of inidividual .join()
         """
+        self.shutdowntime = datetime.datetime.now()
+
+        elapsed = self.shutdowntime - self.startuptime
+        log.info('Warden was active for %s' % str(elapsed))
 
         log.info('Shutting down Warden..')
         try:
