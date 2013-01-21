@@ -9,7 +9,7 @@ import datetime
 
 class Warden:
     """
-    Warden is a solution for controlling Carbon daemons, Sentry, Graphite-web and Diamon all within a single process.
+    Warden is a solution for controlling Carbon daemons, Sentry, Graphite-web and Diamond all within a single process.
     The sub systems all run in separate threads and can be shutdown gracefully using sigint or stop commands.
     """
 

@@ -1,9 +1,6 @@
 import os
-import sqlite3
-import datetime
 import threading
 from django.core import management
-from django.contrib.auth.hashers import PBKDF2PasswordHasher, get_random_string
 from warden_logging import log
 import logging
 import sys
@@ -24,6 +21,12 @@ class GentryManager:
         n = os.environ['DJANGO_SETTINGS_MODULE']
         # import the string as a module
         s = __import__(n)
+        # jump down the python path of the module to get the actual context for settings
+        for p in n.split(".")[1:]:
+            s = getattr(s, p)
+
+        # set timezone here
+        # ..
 
         # if there is a settings file value, that must be read and put into the settings module
         if hasattr(settings, 'SENTRY_KEY_FILE') and settings.SENTRY_KEY_FILE is not None:
@@ -38,10 +41,6 @@ class GentryManager:
                 if key == '':
                     log.error("Keyfile is empty, resorting to default")
                 else:
-                    # jump down the python path of the module to get the actual context for settings
-                    for p in n.split(".")[1:]:
-                        s = getattr(s, p)
-
                     s.SENTRY_KEY = key
 
             except IOError:
@@ -92,32 +91,14 @@ class GentryManager:
 
     def add_superuser(self, email, user, password):
 
-        hasher = PBKDF2PasswordHasher()
-        salt = get_random_string()
-        phash = hasher.encode(password, salt)
-
-        dtime = datetime.datetime.now()
-
-        conn = None
+        from sentry.models import User, Model
+        from django.db import IntegrityError
         try:
-            conn = sqlite3.connect(self.database_path)
-            cur = conn.cursor()
-
-            # first check for existing user with the same username
-            cur.execute("SELECT * FROM auth_user WHERE username LIKE '%s'" % user)
-            if cur.rowcount == 0:
-                cur.execute('INSERT INTO auth_user VALUES(?,?,?,?,?,?,?,?,?,?,?)',(None, user, user, user, email, phash, 1, 1, 1, dtime, dtime))
-                conn.commit()
-                log.info('INSERTED new superuser, %s -> %s' % (user, phash))
-            else:
-                log.info('A User with that username already exists')
-
-
-        except Exception as e:
-            raise e
-        finally:
-            if not conn:
-                conn.close()
+            u = User.objects.create_superuser(user, email, password)
+            u.save()
+            log.info('INSERTED new superuser, %s -> %s' % (user, password))
+        except IntegrityError, e:
+            log.info('A User with that username already exists')
 
     def start(self):
         self.thread.start()
