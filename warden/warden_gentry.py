@@ -15,8 +15,10 @@ class GentryManager:
         if self.settingsmodulepath is None:
             os.environ['DJANGO_SETTINGS_MODULE'] = 'gentry.settings'
         else:
-            os.environ['DJANGO_SETTINGS_MODULE'] = 'j5_warden_gentry_settings'
-            imp.load_source('j5_warden_gentry_settings', warden_utils.normalize_path(self.settingsmodulepath))
+            n = 'j5_warden_gentry_settings'
+            os.environ['DJANGO_SETTINGS_MODULE'] = n
+            if not sys.modules.has_key(n):
+                imp.load_source(n, warden_utils.normalize_path(self.settingsmodulepath))
 
         log.debug('$DJANGO_SETTINGS_MODULE = %s' % os.environ['DJANGO_SETTINGS_MODULE'])
         from django.conf import settings
