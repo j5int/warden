@@ -76,7 +76,8 @@ class DiamondManager:
             self.server.run()
 
         def stop(self):
-            time.sleep(1)
-            self.server.stop()
+            self.server.running = False
+            self.server.scheduler.stop()
+
 
 

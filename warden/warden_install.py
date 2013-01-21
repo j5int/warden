@@ -31,10 +31,14 @@ def main():
     from sentry.models import Project, ProjectKey
     import random
 
-    uid = random.random()*100
+    pname = 'Project%d' % random.random()*100
 
-    Project.objects.using('default').create(name='Project%d' % uid)
-
+    try:
+        Project.objects.using('default').get(name=pname)
+    except Project.DoesNotExist:
+        Project.objects.using('default').create(name=pname)
+    else:
+        print("Error: Project name is already taken.")
 
 
 
