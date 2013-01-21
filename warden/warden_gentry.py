@@ -81,7 +81,7 @@ class GentryManager:
 
         from sentry.models import User
         try:
-            User.objects.using('default').get(username='user')
+            User.objects.using('default').get(username=user)
         except User.DoesNotExist:
             User.objects.db_manager('default').create_superuser(user, email, password)
         else:
