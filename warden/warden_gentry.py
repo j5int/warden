@@ -20,10 +20,6 @@ class GentryManager:
 
         log.debug('$DJANGO_SETTINGS_MODULE = %s' % os.environ['DJANGO_SETTINGS_MODULE'])
         from django.conf import settings
-        self.database_path = settings.DATABASES['default']['NAME']
-
-        # set timezone here
-        # ..
 
         # if there is a settings file value, that must be read and put into the settings module
         if hasattr(warden_settings, 'SENTRY_KEY_FILE') and warden_settings.SENTRY_KEY_FILE is not None:
@@ -43,9 +39,6 @@ class GentryManager:
             except IOError:
                 log.error("Could not read overriding SENTRY_KEY_FILE")
 
-
-        log.info('database_path is %s' % self.database_path)
-        # pull any settings in here if needed
 
         # hook loggers
         import graphite.logger
@@ -85,13 +78,13 @@ class GentryManager:
 
     def add_superuser(self, email, user, password):
 
-        from sentry.models import User, Model
+        from sentry.models import User
         from django.db import IntegrityError
         try:
             u = User.objects.create_superuser(user, email, password)
             u.save()
             log.info('INSERTED new superuser, %s -> %s' % (user, password))
-        except IntegrityError, e:
+        except IntegrityError:
             log.info('A User with that username already exists')
 
     def start(self):
@@ -115,10 +108,7 @@ class GentryManager:
 
         def __init__(self):
             threading.Thread.__init__(self)
-            # name of the module to import "something.something.something.something"
-            n = os.environ['DJANGO_SETTINGS_MODULE']
 
-            # import the string as a module
             from django.conf import settings
 
             from gentry.wsgi import application

@@ -34,6 +34,7 @@ Finally, there is an API that can be used by the monitored application to publis
     author           = 'Matthew Hampton',
     author_email     = 'support@sjsoft.com',
     packages         = ['warden'],
+    zip_safe = False,
     install_requires = [
           'whisper==0.9.10',
           'carbon==0.9.10',

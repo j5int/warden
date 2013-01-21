@@ -17,7 +17,7 @@ class Warden:
                  new_graphite_root=None,            # does the graphite root variable need to be changed
                  carbon_config_file=None,           # where are the carbon config files
                  diamond_config_file=None,          # where is the diamond config file
-                 gentry_settings_module=None,       # the name of the gentry settings module
+                 gentry_settings_path=None,       # the name of the gentry settings module
                  sentry_key_file=None               # a path to a file containing the sentry private key (?) this
                                                     # this overrides the value in the gentry_settings_module
     ):
@@ -38,8 +38,8 @@ class Warden:
             self.settings.CARBON_CONFIG = carbon_config_file
         if diamond_config_file is not None:
             self.settings.DIAMOND_CONFIG = diamond_config_file
-        if gentry_settings_module is not None:
-            self.settings.GENTRY_SETTINGS_MODULE = gentry_settings_module
+        if gentry_settings_path is not None:
+            self.settings.GENTRY_SETTINGS_PATH = gentry_settings_path
         if sentry_key_file is not None:
             self.settings.SENTRY_KEY_FILE = sentry_key_file
 

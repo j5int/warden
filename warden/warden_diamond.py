@@ -74,9 +74,12 @@ class DiamondManager:
 
         def run(self):
             self.server.run()
+            while True:
+                time.sleep(1)
+
 
         def stop(self):
-            time.sleep(1)
+            time.sleep(2)
             self.server.stop()
 
 
