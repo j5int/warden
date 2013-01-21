@@ -114,17 +114,18 @@ class Warden:
         log.info('Warden was active for %s' % str(elapsed))
 
         log.info('Shutting down Warden..')
-        try:
-            self.diamond.stop()
-            log.debug('3. Diamond Stopped.')
-        except Exception:
-            log.exception("An error occured while shutting down Diamond")
 
         try:
             self.gentry.stop()
-            log.debug('2. Gentry Stopped.')
+            log.debug('3. Gentry Stopped.')
         except Exception:
             log.exception("An error occured while shutting down Gentry")
+
+        try:
+            self.diamond.stop()
+            log.debug('2. Diamond Stopped.')
+        except Exception:
+            log.exception("An error occured while shutting down Diamond")
 
         try:
             self.carbon.stop()
