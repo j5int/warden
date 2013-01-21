@@ -80,12 +80,12 @@ class GentryManager:
     def add_superuser(self, email, user, password):
 
         from sentry.models import User
-        from django.db import IntegrityError
         try:
-            u = User.objects.db_manager('default').create_superuser(user, email, password)
-            log.info('INSERTED new superuser, %s -> %s' % (user, password))
-        except IntegrityError:
-            log.info('A User with that username already exists')
+            User.objects.using('default').get(username='user')
+        except User.DoesNotExist:
+            User.objects.db_manager('default').create_superuser(user, email, password)
+        else:
+            print("Error: 'user' username is already taken.")
 
     def start(self):
         self.thread.start()

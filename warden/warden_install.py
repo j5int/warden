@@ -18,10 +18,25 @@ def main():
     print settings.DATABASES['default']['NAME']
 
     # test adding a user
-
+    # this is the recommended method
     from sentry.models import User
 
-    User.objects.db_manager('default').create_user('user','','password')
+    try:
+        User.objects.using('default').get(username='user')
+    except User.DoesNotExist:
+        User.objects.db_manager('default').create_user('user','','password')
+    else:
+        print("Error: 'user' username is already taken.")
+
+    from sentry.models import Project, ProjectKey
+    import random
+
+    uid = random.random()*100
+
+    Project.objects.using('default').create(name='Project%d' % uid)
+
+
+
 
 
 if __name__ == '__main__':
