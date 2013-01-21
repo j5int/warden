@@ -82,8 +82,7 @@ class GentryManager:
         from sentry.models import User
         from django.db import IntegrityError
         try:
-            u = User.objects.create_superuser(user, email, password)
-            u.save()
+            u = User.objects.db_manager('default').create_superuser(user, email, password)
             log.info('INSERTED new superuser, %s -> %s' % (user, password))
         except IntegrityError:
             log.info('A User with that username already exists')

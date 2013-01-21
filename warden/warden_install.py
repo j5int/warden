@@ -1,0 +1,28 @@
+import os
+import imp
+import warden_utils
+import sys
+
+
+def main():
+
+
+    # assume installation has happened before this
+
+    n = 'j5_warden_gentry_settings'
+    os.environ['DJANGO_SETTINGS_MODULE'] = n
+    if not sys.modules.has_key(n):
+        imp.load_source(n, warden_utils.normalize_path('~/settings.py'))
+    from django.conf import settings
+
+    print settings.DATABASES['default']['NAME']
+
+    # test adding a user
+
+    from sentry.models import User
+
+    User.objects.db_manager('default').create_user('user','','password')
+
+
+if __name__ == '__main__':
+    main()

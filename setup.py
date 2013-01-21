@@ -51,7 +51,8 @@ Finally, there is an API that can be used by the monitored application to publis
     url              = 'https://github.com/matthewhampton/warden',
     entry_points     = {
           'console_scripts': [
-              'warden = warden.warden:main'
+              'warden = warden.warden:main',
+              'warden_install = warden.warden_install:main'
           ]
     },
     classifiers      = [
