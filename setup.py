@@ -52,7 +52,7 @@ Finally, there is an API that can be used by the monitored application to publis
     entry_points     = {
           'console_scripts': [
               'warden = warden.warden:main',
-              'warden_install = warden.warden_install:main'
+              'warden_setup = warden.warden_setup:main'
           ]
     },
     classifiers      = [
