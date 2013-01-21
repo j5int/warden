@@ -67,7 +67,6 @@ class GentryManager:
         if settings.LOG_METRIC_ACCESS:
             self.graphitelog.metricAccessLogger.addHandler(streamHandler)
 
-
         management.execute_from_command_line(['manage.py', 'syncdb','--noinput'])
         management.execute_from_command_line(['manage.py', 'migrate'])
         self.add_superuser('admin@admin.com', 'admin','admin')

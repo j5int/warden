@@ -16,7 +16,7 @@ DIAMOND_STDOUT_LEVEL = logging.ERROR
 # GENTRY
 # ----------------
 # path to the gentry settings.py file
-GENTRY_SETTINGS_PATH = '~/settings.py'
+GENTRY_SETTINGS_PATH = '/home/benm/work/venvs/gentrytest/lib/python2.7/site-packages/gentry-0.0.1-py2.7.egg/gentry/settings.py'
 # optional path to an overriding sentry secret key
 SENTRY_KEY_FILE = None
 
