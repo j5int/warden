@@ -85,7 +85,7 @@ class GentryManager:
         except User.DoesNotExist:
             User.objects.db_manager('default').create_superuser(user, email, password)
         else:
-            print("Error: 'user' username is already taken.")
+            log.error("%s username is already taken." % user)
 
     def start(self):
         self.thread.start()
