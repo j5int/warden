@@ -15,10 +15,10 @@ class Warden:
 
     def __init__(self,
                  new_graphite_root=None,            # does the graphite root variable need to be changed
-                 carbon_config_file=None,           # where are the carbon config files
-                 diamond_config_file=None,          # where is the diamond config file
+                 carbon_config_path=None,           # where are the carbon config files
+                 diamond_config_path=None,          # where is the diamond config file
                  gentry_settings_path=None,       # the name of the gentry settings module
-                 sentry_key_file=None               # a path to a file containing the sentry private key (?) this
+                 sentry_key_path=None               # a path to a file containing the sentry private key (?) this
                                                     # this overrides the value in the gentry_settings_module
     ):
         """
@@ -34,14 +34,14 @@ class Warden:
         # pull new config values into settings object
         if new_graphite_root is not None:
             self.settings.GRAPHITE_ROOT = new_graphite_root
-        if carbon_config_file is not None:
-            self.settings.CARBON_CONFIG = carbon_config_file
-        if diamond_config_file is not None:
-            self.settings.DIAMOND_CONFIG = diamond_config_file
+        if carbon_config_path is not None:
+            self.settings.CARBON_CONFIG = carbon_config_path
+        if diamond_config_path is not None:
+            self.settings.DIAMOND_CONFIG = diamond_config_path
         if gentry_settings_path is not None:
             self.settings.GENTRY_SETTINGS_PATH = gentry_settings_path
-        if sentry_key_file is not None:
-            self.settings.SENTRY_KEY_FILE = sentry_key_file
+        if sentry_key_path is not None:
+            self.settings.SENTRY_KEY_FILE = sentry_key_path
 
         log.info('Initialising Warden..')
         try:
