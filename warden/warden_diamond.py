@@ -14,6 +14,11 @@ class DiamondManager:
         self.thread = None
         self.config = None
 
+        if hasattr(settings, 'DIAMOND_ROOT') and settings.DIAMOND_ROOT is not None:
+            os.environ['DIAMOND_ROOT'] = settings.DIAMOND_ROOT
+            log.debug('$DIAMOND_ROOT=%s' % settings.DIAMOND_ROOT)
+
+
         configfile = normalize_path(settings.DIAMOND_CONFIG)
 
         if os.path.exists(configfile):
@@ -34,15 +39,6 @@ class DiamondManager:
         streamHandler.setLevel(settings.DIAMOND_STDOUT_LEVEL)
         self.log_diamond.addHandler(streamHandler)
         self.log_diamond.disabled = False
-
-    def ensure_path(self, section, var, path_tail):
-        if not var in section:
-            try:
-                dr = os.environ['DIAMOND_ROOT']
-                section[var] = os.path.join(dr, path_tail)
-            except KeyError:
-                print 'ERROR: Diamond missing path configuration [%s] AND $DIAMOND_ROOT has not been set!' % var
-                exit(1)
 
     def start(self):
         log.debug("Starting Diamond..")
