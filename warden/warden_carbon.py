@@ -44,8 +44,6 @@ class CarbonManager:
         manager.start()
 
         manager.stop()
-
-        manager.print_status() # to print the current status of the reactor and app runners
     """
 
     def __init__(self, settings):
