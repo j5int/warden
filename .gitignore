@@ -20,3 +20,5 @@ lib64
 
 .idea
 .db
+
+settings.py
