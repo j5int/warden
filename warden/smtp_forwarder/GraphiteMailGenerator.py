@@ -30,21 +30,20 @@ class GraphiteMailGenerator(BaseMailGenerator.BaseMailGenerator):
         current_mail = self._setup_mail()
         current_size = 0
         for attachment_path in self._match_files(self.storage_dir):
-            try:
-                file_size = os.path.getsize(attachment_path)
+            attachment = self.create_attachment(file_path, self._path_to_metric_filename(attachment_path))
+            if attachment:
+                # Attachments are Base64 encoded and hence, are
+                # roughly 137% the size of the actual attachment size,
+                # so we need to use this final size.
+                file_size = len(attachment.as_string())
                 if file_size > self.max_mail_size:
                     self.debug('File size exceeds limit and will not be sent: %s' % file_size)
                 if current_size + file_size > self.max_mail_size:
                     mails.append(current_mail)
                     current_mail = self._setup_mail()
                     current_size = 0
-                self._attach_file(attachment_path, current_mail)
+                current_mail.attach(attachment)
                 current_size += file_size
-            except os.error:
-                # File is inaccessible or does not exist.
-                pass
-            except Exception as e:
-                log.exception('An error occured while attaching files to email: %s' % str(e))
         if current_size > 0:
             mails.append(current_mail)
         return mails
@@ -56,11 +55,6 @@ class GraphiteMailGenerator(BaseMailGenerator.BaseMailGenerator):
         mail['Subject'] = self.settings.EMAIL_SUBJECT_VALIDATION_KEY
         mail.attach(MIMEText(self.settings.EMAIL_BODY_VALIDATION_KEY))
         return mail
-
-    def _attach_file(self, file_path, mail):
-        attachment = self.create_attachment(file_path, self._path_to_metric_filename(file_path))
-        if attachment:
-            mail.attach(attachment)
 
     def _match_files(self, path):
         for possible_file in self._walk_directory(path):
