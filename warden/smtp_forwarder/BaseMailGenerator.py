@@ -12,6 +12,9 @@ class BaseMailGenerator(object):
     def __init__(self):
         pass
 
+    def get_mail_list(self):
+        return []
+
     def create_mail(self):
         pass
 

@@ -49,56 +49,59 @@ class SMTPForwarderManager:
         def run(self):
             self.running = True
             self.SLEEP_TIME = 30
-            self.lastpolltime = time.time()
+            self.last_poll_time = time.time()
 
             while self.running:
-                if time.time()-self.lastpolltime < self.SLEEP_TIME:
+                if time.time()-self.last_poll_time < self.SLEEP_TIME:
                     time.sleep(1)
                     continue
 
-                for generator_cls in BaseMailGenerator.generator_registry:
-                    generator = generator_cls(self.settings)
-                    mail = generator.create_mail()
+                conn = SMTP()
+                try:
+                    log.debug('Connecting...')
+                    conn.connect(self.settings.EMAIL_HOST)
+                    conn.set_debuglevel(False)
 
-                    if mail:
-                        conn = SMTP()
-                        try:
-                            log.debug('Connecting...')
-                            conn.connect(self.settings.EMAIL_HOST)
-                            conn.set_debuglevel(False)
+                    if self.settings.EMAIL_USE_TLS:
+                        conn.starttls()
 
-                            if self.settings.EMAIL_USE_TLS:
-                                conn.starttls()
+                    log.debug('Logging in..')
+                    conn.login(self.settings.EMAIL_USERNAME, self.settings.EMAIL_PASSWORD)
+                    max_mail_size = int(conn.esmtp_features['size'])
 
-                            log.debug('Logging in..')
-                            conn.login(self.settings.EMAIL_USERNAME, self.settings.EMAIL_PASSWORD)
+                    for generator_cls in BaseMailGenerator.generator_registry:
+                        generator = generator_cls(self.settings, max_mail_size)
+                        mails = generator.get_mail_list()
 
-                            log.debug('Sending mail..')
-                            log.debug('FROM: ' + mail['From'])
-                            log.debug('TO: ' + mail['To'])
-                            log.debug('SIZE: ' + str(len(mail.as_string())))
+                        for mail in mails:
+                            if mail:
+                                log.debug('Sending mail..')
+                                log.debug('FROM: ' + mail['From'])
+                                log.debug('TO: ' + mail['To'])
+                                log.debug('SIZE: ' + str(len(mail.as_string())))
 
-                            t1 = time.time()
-                            conn.sendmail(mail['From'], mail['To'], mail.as_string())
+                                start_time = time.time()
+                                conn.sendmail(mail['From'], mail['To'], mail.as_string())
+                                log.debug('Sent mail in %d seconds.' % (time.time()-start_time))
 
+                    self.last_poll_time = time.time()
+                except smtplib.SMTPRecipientsRefused:
+                    log.error('STMPRecipientsRefused')
+                except smtplib.SMTPHeloError:
+                    log.error('SMTPHeloError')
+                except smtplib.SMTPSenderRefused:
+                    log.exception('SMTPSenderRefused')
+                except smtplib.SMTPDataError:
+                    log.error('SMTPDataError')
+                except Exception as exc:
+                    log.exception('An exception occured when sending mail')
+                finally:
+                    if time.time() - self.last_poll_time < self.SLEEP_TIME:
+                        # Try send again in 10 minutes instead of retrying the instant it fails.
+                        self.last_poll_time = time.time() - self.SLEEP_TIME + (60 * 10)
 
-
-                            log.debug('Sent mail in %d seconds.' % (time.time()-t1))
-                            self.lastpolltime = time.time()
-
-                        except smtplib.SMTPRecipientsRefused:
-                            log.error('STMPRecipientsRefused')
-                        except smtplib.SMTPHeloError:
-                            log.error('SMTPHeloError')
-                        except smtplib.SMTPSenderRefused:
-                            log.exception('SMTPSenderRefused')
-                        except smtplib.SMTPDataError:
-                            log.error('SMTPDataError')
-                        except Exception as exc:
-                            log.exception('An exception occured when sending mail')
-                        finally:
-                            if hasattr(conn, 'sock') and conn.sock:
-                                conn.quit()
+                    if hasattr(conn, 'sock') and conn.sock:
+                        conn.quit()
 
         def stop(self):
             self.running = False

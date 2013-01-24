@@ -2,29 +2,52 @@ import re
 import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from warden.warden_logging import log
 
 import BaseMailGenerator
 
 @BaseMailGenerator.register_generator
 class GraphiteMailGenerator(BaseMailGenerator.BaseMailGenerator):
 
-    def __init__(self, some_settings):
+    def __init__(self, some_settings, max_mail_size):
         super(GraphiteMailGenerator, self).__init__()
         self.settings = some_settings
         self.storage_dir = os.path.join(os.environ['GRAPHITE_ROOT'], 'storage', 'whisper')
+        # Mails must be 10MB or less
+        self.max_mail_size = min(max_mail_size, (1024 * 1024 * 10))
 
-    def create_mail(self):
+
+    def get_mail_list(self):
         if not self.settings.EMAIL_TO or self.settings.EMAIL_TO == '':
-            print 'No receiver email address defined.'
-            return None
+            log.error('No receiver email address defined.')
+            return []
 
         if not os.path.isdir(self.storage_dir):
-            print 'Invalid whisper storage path specified.'
-            return None
+            log.error('Invalid whisper storage path specified.')
+            return []
 
-        mail = self._setup_mail()
-        files = self._attach_files(mail)
-        return mail if (files > 0) else None
+        mails = []
+        current_mail = self._setup_mail()
+        current_size = 0
+        for attachment_path in self._match_files(self.storage_dir):
+            try:
+                file_size = os.path.getsize(attachment_path)
+                if file_size > self.max_mail_size:
+                    self.debug('File size exceeds limit and will not be sent: %s' % file_size)
+                if current_size + file_size > self.max_mail_size:
+                    mails.append(current_mail)
+                    current_mail = self._setup_mail()
+                    current_size = 0
+                self._attach_file(attachment_path, current_mail)
+                current_size += file_size
+            except os.error:
+                # File is inaccessible or does not exist.
+                pass
+            except Exception as e:
+                log.exception('An error occured while attaching files to email: %s' % str(e))
+        if current_size > 0:
+            mails.append(current_mail)
+        return mails
 
     def _setup_mail(self):
         mail = MIMEMultipart()
@@ -34,29 +57,18 @@ class GraphiteMailGenerator(BaseMailGenerator.BaseMailGenerator):
         mail.attach(MIMEText(self.settings.EMAIL_BODY_VALIDATION_KEY))
         return mail
 
-    def _attach_files(self, mail):
-        attached_files = 0
-        print "Scanning for files.."
-        # Use generator to walk storage directory
-        for path in self._match_files(self.storage_dir):
-            attachment = self.create_attachment(path, self._path_to_metric_filename(path))
-            if attachment:
-                mail.attach(attachment)
-                attached_files += 1
-        print "Found %d files for sending." % attached_files
-        return attached_files
+    def _attach_file(self, file_path, mail):
+        attachment = self.create_attachment(file_path, self._path_to_metric_filename(file_path))
+        if attachment:
+            mail.attach(attachment)
 
     def _match_files(self, path):
-        c = self.settings.METRIC_PATTERNS_TO_SEND
         for possible_file in self._walk_directory(path):
-            for pat in c:
-                if re.match(pat, possible_file) is not None:
-                    print 'Found match: ' + possible_file
+            for patterns in self.settings.METRIC_PATTERNS_TO_SEND:
+                if re.match(patterns, possible_file) is not None:
+                    log.debug('Found match: ' + possible_file)
                     yield possible_file
                     break
-
-
-
 
     def _walk_directory(self, path):
         if isinstance(path, str):
