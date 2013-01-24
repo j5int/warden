@@ -21,4 +21,4 @@ lib64
 .idea
 .db
 
-settings.py
+warden/settings.py
