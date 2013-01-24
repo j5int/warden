@@ -30,7 +30,7 @@ class GraphiteMailGenerator(BaseMailGenerator.BaseMailGenerator):
         current_mail = self._setup_mail()
         current_size = 0
         for attachment_path in self._match_files(self.storage_dir):
-            attachment = self.create_attachment(file_path, self._path_to_metric_filename(attachment_path))
+            attachment = self.create_attachment(attachment_path, self._path_to_metric_filename(attachment_path))
             if attachment:
                 # Attachments are Base64 encoded and hence, are
                 # roughly 137% the size of the actual attachment size,
