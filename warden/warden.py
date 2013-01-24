@@ -3,6 +3,7 @@ import time
 from warden_carbon import CarbonManager
 from warden_gentry import GentryManager
 from warden_diamond import DiamondManager
+from warden_smtp_forwarder import SMTPForwarderManager
 from warden_logging import log
 from warden_utils import StartupException
 import datetime
@@ -53,6 +54,10 @@ class Warden:
 
             # initialise Diamond, not much is required here
             self.diamond = DiamondManager(self.settings)
+
+            if self.settings.START_SMTP_FORWARDER:
+                self.smtpforward = SMTPForwarderManager(self.settings)
+
         except Exception:
             log.exception("An error occured during initialisation.")
             sys.exit(1)
@@ -77,6 +82,10 @@ class Warden:
             self.gentry.start()
             self.wait_for_start(self.gentry)
             log.debug('3. Gentry Started')
+
+            if self.settings.START_SMTP_FORWARDER:
+                self.smtpforward.start()
+                log.debug('4. Graphite SMTP forwarder Started')
 
             # blocking
             log.info('Started Warden.')
@@ -114,6 +123,13 @@ class Warden:
         log.info('Warden was active for %s' % str(elapsed))
 
         log.info('Shutting down Warden..')
+
+        if self.settings.START_SMTP_FORWARDER:
+            try:
+                self.smtpforward.stop()
+                log.debug('4. Graphite SMTP forwarder stopped')
+            except Exception:
+                log.exception('An error occured while shutting down Graphite SMTP forwarder')
 
         try:
             self.gentry.stop()
