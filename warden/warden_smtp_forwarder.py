@@ -16,7 +16,6 @@ class SMTPForwarderManager:
 
         config_file = os.path.expandvars(os.path.expanduser(config_file))
 
-
         self.dispatcherThread = self.CentralDispatcherThread(config_file)
 
     def start(self):
@@ -34,9 +33,7 @@ class SMTPForwarderManager:
         def __init__(self, config_file):
             threading.Thread.__init__(self)
             self.running = False
-            self.configuration = ConfigObj(config_file)
-
-            self.configuration['METRIC_PATTERNS_TO_SEND'] = self.compile_metric_patterns(self.configuration['METRIC_PATTERNS_TO_SEND'])
+            self.config_file = config_file
 
         def compile_metric_patterns(self, old_patterns):
 
@@ -52,6 +49,10 @@ class SMTPForwarderManager:
 
         def run(self):
             self.running = True
+
+            self.configuration = ConfigObj(self.config_file)
+            self.configuration['METRIC_PATTERNS_TO_SEND'] = self.compile_metric_patterns(self.configuration['METRIC_PATTERNS_TO_SEND'])
+
             self.SLEEP_TIME = int(self.configuration['SEND_INTERVAL'])
             self.last_poll_time = time.time()
 
@@ -59,6 +60,9 @@ class SMTPForwarderManager:
                 if (time.time()-self.last_poll_time) < self.SLEEP_TIME:
                     time.sleep(1)
                     continue
+
+                self.configuration = ConfigObj(self.config_file)
+                self.configuration['METRIC_PATTERNS_TO_SEND'] = self.compile_metric_patterns(self.configuration['METRIC_PATTERNS_TO_SEND'])
 
                 conn = SMTP()
                 try:
