@@ -9,16 +9,15 @@ import imp
 
 class GentryManager:
 
-    def __init__(self, warden_settings):
-        self.settingsmodulepath = warden_settings.GENTRY_SETTINGS_PATH
+    def __init__(self, gentry_settings_file=None):
 
-        if self.settingsmodulepath is None:
+        if gentry_settings_file is None:
             os.environ['DJANGO_SETTINGS_MODULE'] = 'gentry.settings'
         else:
             n = 'j5_warden_gentry_settings'
             os.environ['DJANGO_SETTINGS_MODULE'] = n
             if not sys.modules.has_key(n):
-                imp.load_source(n, warden_utils.normalize_path(self.settingsmodulepath))
+                imp.load_source(n, warden_utils.normalize_path(gentry_settings_file))
 
         log.debug('$DJANGO_SETTINGS_MODULE = %s' % os.environ['DJANGO_SETTINGS_MODULE'])
         from django.conf import settings
@@ -49,9 +48,6 @@ class GentryManager:
         self.graphitelog.metricAccessLogger.propagate = False
         if settings.LOG_METRIC_ACCESS:
             self.graphitelog.metricAccessLogger.addHandler(streamHandler)
-
-       # management.execute_from_command_line(['manage.py', 'syncdb','--noinput'])
-        #management.execute_from_command_line(['manage.py', 'migrate'])
 
         self.thread = self.GentryServerThread()
 

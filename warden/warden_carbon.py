@@ -46,7 +46,7 @@ class CarbonManager:
         manager.stop()
     """
 
-    def __init__(self, settings):
+    def __init__(self, new_graphite_root=None, carbon_conf_file=None):
         """
         Build the storage directory and prepare for Start. The storage directory
         is in the GRAPHITE_ROOT folder which is used by all of the carbon daemons.
@@ -56,26 +56,23 @@ class CarbonManager:
 
         log.debug("Initialising Carbon")
 
-        # pull variables from settings file
-        if hasattr(settings,'GRAPHITE_ROOT') and settings.GRAPHITE_ROOT is not None:
-            os.environ["GRAPHITE_ROOT"] = normalize_path(settings.GRAPHITE_ROOT)
+        # If an overriding graphite_root is provided: set os.environ['GRAPHITE_ROOT']
+        if new_graphite_root is not None:
+            os.environ["GRAPHITE_ROOT"] = normalize_path(new_graphite_root)
 
-        self.GRAPHITE_ROOT = os.environ['GRAPHITE_ROOT']
-        log.debug("GRAPHITE_ROOT = %s" % self.GRAPHITE_ROOT)
+        # Log current GRAPHITE_ROOT
+        log.debug("GRAPHITE_ROOT = %s" % os.environ['GRAPHITE_ROOT'])
 
-        if hasattr(settings, 'CARBON_CONFIG') and settings.CARBON_CONFIG is not None:
-            self.carbon_config_file = normalize_path(settings.CARBON_CONFIG)
+        # If the path to the carbon.conf file is supplied: use it
+        if carbon_conf_file is not None:
+            self.carbon_config_file = normalize_path(carbon_conf_file)
         else:
-            self.carbon_config_file = os.path.join(self.GRAPHITE_ROOT, 'conf','carbon.conf')
+            # otherwise build the path using GRAPHITE_ROOT
+            self.carbon_config_file = os.path.join(os.environ['GRAPHITE_ROOT'], 'conf','carbon.conf')
 
-        #read config file, (this may be slightly useless and or unnessesary)
+        #read config file, used mostly to get the port its running on
         self.configuration = SafeConfigParser()
         self.configuration.read(self.carbon_config_file)
-
-        # make storage dir
-        self.STORAGEDIR = os.path.join(self.GRAPHITE_ROOT, 'storage')
-        if not os.path.exists(self.STORAGEDIR):
-            os.makedirs(self.STORAGEDIR)
 
         self.application_service = service.MultiService()
         self.reactor_thread = None
@@ -118,16 +115,10 @@ class CarbonManager:
         else:
             log.error("Can't stop Carbon/Twistd if it has not started.")
 
-        #this may be unnecessary
-        if remove_pids:
-            pids = [os.path.join(self.STORAGEDIR, f) for f in os.listdir(self.STORAGEDIR) if f[-4:]=='.pid']
-            for pidfile in pids:
-                log.debug("Removing old pidfile %s" % pidfile)
-                os.remove(pidfile)
-
-
     def is_active(self):
-
+        """
+        Carbon-combined is defined as active once the aggregator is ready to receive metrics
+        """
         result = True
 
         if not self.reactor_thread.isAlive(): return False

@@ -9,16 +9,16 @@ import BaseMailGenerator
 @BaseMailGenerator.register_generator
 class GraphiteMailGenerator(BaseMailGenerator.BaseMailGenerator):
 
-    def __init__(self, some_settings, max_mail_size):
+    def __init__(self, configuration, max_mail_size):
         super(GraphiteMailGenerator, self).__init__()
-        self.settings = some_settings
+        self.configuration = configuration
         self.storage_dir = os.path.join(os.environ['GRAPHITE_ROOT'], 'storage', 'whisper')
         # Mails must be 10MB or less
         self.max_mail_size = min(max_mail_size, (1024 * 1024 * 10))
 
 
     def get_mail_list(self):
-        if not self.settings.EMAIL_TO or self.settings.EMAIL_TO == '':
+        if not self.configuration['EMAIL_TO'] or self.configuration['EMAIL_TO'] == '':
             log.error('No receiver email address defined.')
             return []
 
@@ -50,16 +50,16 @@ class GraphiteMailGenerator(BaseMailGenerator.BaseMailGenerator):
 
     def _setup_mail(self):
         mail = MIMEMultipart()
-        mail['To'] = self.settings.EMAIL_TO
-        mail['From'] = self.settings.EMAIL_FROM
-        mail['Subject'] = self.settings.EMAIL_SUBJECT_VALIDATION_KEY
-        mail.attach(MIMEText(self.settings.EMAIL_BODY_VALIDATION_KEY))
+        mail['To'] = self.configuration['EMAIL_TO']
+        mail['From'] = self.configuration['EMAIL_FROM']
+        mail['Subject'] = self.configuration['EMAIL_SUBJECT_VALIDATION_KEY']
+        mail.attach(MIMEText(self.configuration['EMAIL_BODY_VALIDATION_KEY']))
         return mail
 
     def _match_files(self, path):
         for possible_file in self._walk_directory(path):
-            for patterns in self.settings.METRIC_PATTERNS_TO_SEND:
-                if re.match(patterns, possible_file) is not None:
+            for pattern in self.configuration['METRIC_PATTERNS_TO_SEND']:
+                if re.match(pattern, possible_file) is not None:
                     #log.debug('Found match: ' + possible_file)
                     yield possible_file
                     break

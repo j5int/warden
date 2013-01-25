@@ -10,33 +10,38 @@ from diamond.server import Server
 
 class DiamondManager:
 
-    def __init__(self, settings):
+    def __init__(self, diamond_root=None, diamond_conf_file=None, diamond_stdout_lvl=None):
         self.thread = None
         self.config = None
 
-        if hasattr(settings, 'DIAMOND_ROOT') and settings.DIAMOND_ROOT is not None:
-            os.environ['DIAMOND_ROOT'] = settings.DIAMOND_ROOT
-            log.debug('$DIAMOND_ROOT=%s' % settings.DIAMOND_ROOT)
+        if diamond_root is not None:
+            os.environ['DIAMOND_ROOT'] = diamond_root
+            log.debug('$DIAMOND_ROOT=%s' % diamond_root)
 
+        if diamond_conf_file is None:
+            raise ValueError('DiamondManager: Path to diamond.conf was not supplied!')
 
-        configfile = normalize_path(settings.DIAMOND_CONFIG)
+        diamond_conf_file = normalize_path(diamond_conf_file)
 
-        if os.path.exists(configfile):
-            self.config = configobj.ConfigObj(configfile)
-            self.config['configfile'] = configfile
+        if os.path.exists(diamond_conf_file):
+            self.config = configobj.ConfigObj(diamond_conf_file)
+            self.config['configfile'] = diamond_conf_file
         else:
-            print >> sys.stderr, "ERROR: Config file: %s does not exist." % configfile
+            print >> sys.stderr, "ERROR: Config file: %s does not exist." % diamond_conf_file
             sys.exit(1)
 
+        if diamond_stdout_lvl is None:
+            diamond_stdout_lvl = logging.ERROR
+
         self.log_diamond = logging.getLogger('diamond')
-        self.log_diamond.setLevel(settings.DIAMOND_STDOUT_LEVEL)
+        self.log_diamond.setLevel(diamond_stdout_lvl)
         self.log_diamond.propagate = False
 
 #       LOG to STDOUT
         formatter = logging.Formatter('[%(asctime)s][%(levelname)s][%(message)s]')
         streamHandler = logging.StreamHandler(sys.stdout)
         streamHandler.setFormatter(formatter)
-        streamHandler.setLevel(settings.DIAMOND_STDOUT_LEVEL)
+        streamHandler.setLevel(diamond_stdout_lvl)
         self.log_diamond.addHandler(streamHandler)
         self.log_diamond.disabled = False
 

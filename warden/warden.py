@@ -19,8 +19,11 @@ class Warden:
                  carbon_config_path=None,           # where are the carbon config files
                  diamond_config_path=None,          # where is the diamond config file
                  gentry_settings_path=None,         # the name of the gentry settings module
-                 sentry_key_path=None               # a path to a file containing the sentry private key (?) this
+                 sentry_key_path=None,               # a path to a file containing the sentry private key (?) this
                                                     # this overrides the value in the gentry_settings_module
+                 start_stmp_forwarder=True,
+                 smtp_forwarder_config_path=None
+
     ):
         """
         Warden uses values from its default settings file UNLESS explicitely defined
@@ -29,34 +32,48 @@ class Warden:
         import settings
 
         self.settings = settings
+
+        log.setLevel(self.settings.STDOUT_LEVEL)
+
         self.startuptime = None
         self.shutdowntime = None
 
         # pull new config values into settings object
         if new_graphite_root is not None:
             self.settings.GRAPHITE_ROOT = new_graphite_root
+
         if carbon_config_path is not None:
             self.settings.CARBON_CONFIG = carbon_config_path
+
         if diamond_config_path is not None:
             self.settings.DIAMOND_CONFIG = diamond_config_path
+
         if gentry_settings_path is not None:
             self.settings.GENTRY_SETTINGS_PATH = gentry_settings_path
+
         if sentry_key_path is not None:
             self.settings.SENTRY_KEY_FILE = sentry_key_path
+
+        if start_stmp_forwarder is False:
+            self.settings.START_SMTP_FORWARDER = False
+
+        if smtp_forwarder_config_path is not None:
+            self.settings.SMTP_FORWARDER_CONFIG = smtp_forwarder_config_path
+
 
         log.info('Initialising Warden..')
         try:
             # initialise Carbon, daemon services are setup here, but the event reactor is not yet run
-            self.carbon = CarbonManager(self.settings)
+            self.carbon = CarbonManager(self.settings.GRAPHITE_ROOT, self.settings.CARBON_CONFIG)
 
             # initialise Gentry, this will also perform database manipulation for Sentry
-            self.gentry = GentryManager(self.settings)
+            self.gentry = GentryManager(self.settings.GENTRY_SETTINGS_PATH)
 
             # initialise Diamond, not much is required here
-            self.diamond = DiamondManager(self.settings)
+            self.diamond = DiamondManager(self.settings.DIAMOND_ROOT, self.settings.DIAMOND_CONFIG, self.settings.DIAMOND_STDOUT_LEVEL)
 
             if self.settings.START_SMTP_FORWARDER:
-                self.smtpforward = SMTPForwarderManager(self.settings)
+                self.smtpforward = SMTPForwarderManager(self.settings.SMTP_FORWARDER_CONFIG)
 
         except Exception:
             log.exception("An error occured during initialisation.")

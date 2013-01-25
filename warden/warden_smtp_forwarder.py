@@ -7,13 +7,17 @@ from smtplib import SMTP
 from smtp_forwarder import BaseMailGenerator
 from warden_logging import log
 from  smtp_forwarder import GraphiteMailGenerator
+from configobj import ConfigObj
 
 
 class SMTPForwarderManager:
 
-    def __init__(self, s):
-        self.settings = s
-        self.dispatcherThread = self.CentralDispatcherThread(self.settings)
+    def __init__(self, config_file):
+
+        config_file = os.path.expandvars(os.path.expanduser(config_file))
+
+
+        self.dispatcherThread = self.CentralDispatcherThread(config_file)
 
     def start(self):
         log.debug('Starting Graphite SMTP forwader...')
@@ -27,11 +31,12 @@ class SMTPForwarderManager:
 
     class CentralDispatcherThread(threading.Thread):
 
-        def __init__(self, s):
+        def __init__(self, config_file):
             threading.Thread.__init__(self)
             self.running = False
-            self.settings = s
-            self.settings.METRIC_PATTERNS_TO_SEND = self.compile_metric_patterns(self.settings.METRIC_PATTERNS_TO_SEND)
+            self.configuration = ConfigObj(config_file)
+
+            self.configuration['METRIC_PATTERNS_TO_SEND'] = self.compile_metric_patterns(self.configuration['METRIC_PATTERNS_TO_SEND'])
 
         def compile_metric_patterns(self, old_patterns):
 
@@ -47,29 +52,29 @@ class SMTPForwarderManager:
 
         def run(self):
             self.running = True
-            self.SLEEP_TIME = 30
+            self.SLEEP_TIME = int(self.configuration['SEND_INTERVAL'])
             self.last_poll_time = time.time()
 
             while self.running:
-                if time.time()-self.last_poll_time < self.SLEEP_TIME:
+                if (time.time()-self.last_poll_time) < self.SLEEP_TIME:
                     time.sleep(1)
                     continue
 
                 conn = SMTP()
                 try:
                     log.debug('Connecting...')
-                    conn.connect(self.settings.EMAIL_HOST)
+                    conn.connect(self.configuration['EMAIL_HOST'])
                     conn.set_debuglevel(False)
 
-                    if self.settings.EMAIL_USE_TLS:
+                    if self.configuration['EMAIL_USE_TLS']:
                         conn.starttls()
 
                     log.debug('Logging in..')
-                    conn.login(self.settings.EMAIL_USERNAME, self.settings.EMAIL_PASSWORD)
+                    conn.login(self.configuration['EMAIL_USERNAME'], self.configuration['EMAIL_PASSWORD'])
                     max_mail_size = int(conn.esmtp_features['size'])
 
                     for generator_cls in BaseMailGenerator.generator_registry:
-                        generator = generator_cls(self.settings, max_mail_size)
+                        generator = generator_cls(self.configuration, max_mail_size)
                         mails = generator.get_mail_list()
 
                         for mail in mails:
@@ -101,9 +106,9 @@ class SMTPForwarderManager:
                 except Exception as exc:
                     log.exception('An exception occured when sending mail')
                 finally:
-                    if time.time() - self.last_poll_time < self.SLEEP_TIME:
-                        # Try send again in 10 minutes instead of retrying the instant it fails.
-                        self.last_poll_time = time.time() - self.SLEEP_TIME + (60 * 10)
+                    # Did it fail to send
+                    if time.time() - self.last_poll_time > self.SLEEP_TIME:
+                        self.last_poll_time = time.time() + (60 * 10) - self.SLEEP_TIME
 
                     if hasattr(conn, 'sock') and conn.sock:
                         conn.quit()
