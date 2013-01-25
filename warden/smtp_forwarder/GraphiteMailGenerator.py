@@ -18,7 +18,7 @@ class GraphiteMailGenerator(BaseMailGenerator.BaseMailGenerator):
 
 
     def get_mail_list(self):
-        if not self.configuration['EMAIL_TO'] or self.configuration['EMAIL_TO'] == '':
+        if not self.configuration['email_to'] or self.configuration['email_to'] == '':
             log.error('No receiver email address defined.')
             return []
 
@@ -50,15 +50,15 @@ class GraphiteMailGenerator(BaseMailGenerator.BaseMailGenerator):
 
     def _setup_mail(self):
         mail = MIMEMultipart()
-        mail['To'] = self.configuration['EMAIL_TO']
-        mail['From'] = self.configuration['EMAIL_FROM']
-        mail['Subject'] = self.configuration['EMAIL_SUBJECT_VALIDATION_KEY']
-        mail.attach(MIMEText(self.configuration['EMAIL_BODY_VALIDATION_KEY']))
+        mail['To'] = self.configuration['email_to']
+        mail['From'] = self.configuration['email_from']
+        mail['Subject'] = self.configuration['email_subject_validation_key']
+        mail.attach(MIMEText(self.configuration['email_body_validation_key']))
         return mail
 
     def _match_files(self, path):
         for possible_file in self._walk_directory(path):
-            for pattern in self.configuration['METRIC_PATTERNS_TO_SEND']:
+            for pattern in self.configuration['metric_patterns_to_send']:
                 if re.match(pattern, possible_file) is not None:
                     #log.debug('Found match: ' + possible_file)
                     yield possible_file

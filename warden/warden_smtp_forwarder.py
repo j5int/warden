@@ -8,6 +8,7 @@ from smtp_forwarder import BaseMailGenerator
 from warden_logging import log
 from  smtp_forwarder import GraphiteMailGenerator
 from configobj import ConfigObj
+import ConfigParser
 
 
 class SMTPForwarderManager:
@@ -34,26 +35,16 @@ class SMTPForwarderManager:
             threading.Thread.__init__(self)
             self.running = False
             self.config_file = config_file
+            self.busy_sending = False
 
-        def compile_metric_patterns(self, old_patterns):
 
-            compiled = []
-            for p in old_patterns:
-                if p.endswith('.wsp'):
-                    p = p[:-4]
-                p = p.replace('.', os.path.sep).replace('\\','\\\\').replace('*','.+')
-                p = ".*%s\\.wsp$" % p
-                compiled.append(re.compile(p))
-
-            return compiled
 
         def run(self):
             self.running = True
 
-            self.configuration = ConfigObj(self.config_file)
-            self.configuration['METRIC_PATTERNS_TO_SEND'] = self.compile_metric_patterns(self.configuration['METRIC_PATTERNS_TO_SEND'])
+            self.configuration = self.load_config()
 
-            self.SLEEP_TIME = int(self.configuration['SEND_INTERVAL'])
+            self.SLEEP_TIME = int(self.configuration['send_interval'])
             self.last_poll_time = time.time()
 
             while self.running:
@@ -61,20 +52,19 @@ class SMTPForwarderManager:
                     time.sleep(1)
                     continue
 
-                self.configuration = ConfigObj(self.config_file)
-                self.configuration['METRIC_PATTERNS_TO_SEND'] = self.compile_metric_patterns(self.configuration['METRIC_PATTERNS_TO_SEND'])
+                self.configuration = self.load_config()
 
                 conn = SMTP()
                 try:
                     log.debug('Connecting...')
-                    conn.connect(self.configuration['EMAIL_HOST'])
+                    conn.connect(self.configuration['email_host'])
                     conn.set_debuglevel(False)
 
-                    if self.configuration['EMAIL_USE_TLS']:
+                    if self.configuration['email_use_tls']:
                         conn.starttls()
 
                     log.debug('Logging in..')
-                    conn.login(self.configuration['EMAIL_USERNAME'], self.configuration['EMAIL_PASSWORD'])
+                    conn.login(self.configuration['email_username'], self.configuration['email_password'])
                     max_mail_size = int(conn.esmtp_features['size'])
 
                     for generator_cls in BaseMailGenerator.generator_registry:
@@ -119,3 +109,32 @@ class SMTPForwarderManager:
 
         def stop(self):
             self.running = False
+
+        def compile_metric_pattern(self, p):
+
+                if p.endswith('.wsp'):
+                    p = p[:-4]
+                p = p.replace('.', os.path.sep).replace('\\','\\\\').replace('*','.+')
+                p = ".*%s\\.wsp$" % p
+
+                return re.compile(p)
+
+        def load_config(self):
+            self.cfg = ConfigParser.RawConfigParser()
+            self.cfg.read(self.config_file)
+
+            self.configuration = {}
+            for section in self.cfg.sections():
+                for option in self.cfg.options(section):
+                    self.configuration[option] = self.cfg.get(section, option)
+
+            patternsstring = self.configuration['metric_patterns_to_send']
+            patterns = patternsstring.split(',')
+            compiled_patterns = []
+            for pattern in patterns:
+                if len(pattern.strip())>0:
+                    compiled_patterns.append(self.compile_metric_pattern(pattern.strip()))
+
+            self.configuration['metric_patterns_to_send'] = compiled_patterns
+
+            return self.configuration
