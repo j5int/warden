@@ -18,7 +18,7 @@ class Warden:
                  new_graphite_root=None,            # does the graphite root variable need to be changed
                  carbon_config_path=None,           # where are the carbon config files
                  diamond_config_path=None,          # where is the diamond config file
-                 gentry_settings_path=None,       # the name of the gentry settings module
+                 gentry_settings_path=None,         # the name of the gentry settings module
                  sentry_key_path=None               # a path to a file containing the sentry private key (?) this
                                                     # this overrides the value in the gentry_settings_module
     ):

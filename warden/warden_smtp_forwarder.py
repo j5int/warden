@@ -32,7 +32,6 @@ class SMTPForwarderManager:
             self.running = False
             self.settings = s
             self.settings.METRIC_PATTERNS_TO_SEND = self.compile_metric_patterns(self.settings.METRIC_PATTERNS_TO_SEND)
-            print self.settings.METRIC_PATTERNS_TO_SEND
 
         def compile_metric_patterns(self, old_patterns):
 
@@ -75,10 +74,16 @@ class SMTPForwarderManager:
 
                         for mail in mails:
                             if mail:
-                                log.debug('Sending mail..')
-                                log.debug('FROM: ' + mail['From'])
-                                log.debug('TO: ' + mail['To'])
-                                log.debug('SIZE: ' + str(len(mail.as_string())))
+
+                                bytes = len(mail.as_string())
+                                if bytes < 1024:
+                                    sizestr = str(bytes) + "b"
+                                elif bytes < 1048576:
+                                    sizestr = "%.2f Kb" % (bytes/1024.0)
+                                else:
+                                    sizestr = "%.2f Mb" % ((bytes/1024.0)/1024.0)
+
+                                log.debug('%s: Sending mail to: %s Size: %s' % (generator.__class__.__name__, mail['To'],sizestr))
 
                                 start_time = time.time()
                                 conn.sendmail(mail['From'], mail['To'], mail.as_string())

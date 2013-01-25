@@ -60,7 +60,7 @@ class GraphiteMailGenerator(BaseMailGenerator.BaseMailGenerator):
         for possible_file in self._walk_directory(path):
             for patterns in self.settings.METRIC_PATTERNS_TO_SEND:
                 if re.match(patterns, possible_file) is not None:
-                    log.debug('Found match: ' + possible_file)
+                    #log.debug('Found match: ' + possible_file)
                     yield possible_file
                     break
 

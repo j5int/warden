@@ -23,25 +23,6 @@ class GentryManager:
         log.debug('$DJANGO_SETTINGS_MODULE = %s' % os.environ['DJANGO_SETTINGS_MODULE'])
         from django.conf import settings
 
-        # if there is a settings file value, that must be read and put into the settings module
-        if hasattr(warden_settings, 'SENTRY_KEY_FILE') and warden_settings.SENTRY_KEY_FILE is not None:
-            path = warden_utils.normalize_path(warden_settings.SENTRY_KEY_FILE)
-            log.debug("Overriding SENTRY_KEY from %s" % path)
-            try:
-                # read the key from the file
-                f = open(path)
-                key = f.readline().strip()
-                f.close()
-
-                if key == '':
-                    log.error("Keyfile is empty, resorting to default")
-                else:
-                    settings.SENTRY_KEY = key
-
-            except IOError:
-                log.error("Could not read overriding SENTRY_KEY_FILE")
-
-
         # hook loggers
         import graphite.logger
         self.graphitelog = graphite.logger.log
@@ -69,23 +50,11 @@ class GentryManager:
         if settings.LOG_METRIC_ACCESS:
             self.graphitelog.metricAccessLogger.addHandler(streamHandler)
 
-        management.execute_from_command_line(['manage.py', 'syncdb','--noinput'])
-        management.execute_from_command_line(['manage.py', 'migrate'])
-        self.add_superuser('admin@admin.com', 'admin','admin')
-
+       # management.execute_from_command_line(['manage.py', 'syncdb','--noinput'])
+        #management.execute_from_command_line(['manage.py', 'migrate'])
 
         self.thread = self.GentryServerThread()
 
-
-    def add_superuser(self, email, user, password):
-
-        from sentry.models import User
-        try:
-            User.objects.using('default').get(username=user)
-        except User.DoesNotExist:
-            User.objects.db_manager('default').create_superuser(user, email, password)
-        else:
-            log.error("%s username is already taken." % user)
 
     def start(self):
         self.thread.start()
