@@ -36,16 +36,13 @@ Finally, there is an API that can be used by the monitored application to publis
     packages         = ['warden', 'warden.smtp_forwarder'],
     zip_safe = False,
     install_requires = [
-          'whisper==0.9.10',
           'carbon==0.9.10-warden',
           'gentry==0.0.1',
-          'twisted',
-          'graphite-web',
-          'configobj',
-          'diamond'],
+          'diamond==x.x-warden'],
     dependency_links = [
-        'http://github.com/Supy/gentry/tarball/master#gentry-0.0.1',
-        'http://github.com/AstromechZA/carbon/tarball/0.9.x-win#carbon-0.9.10'
+        'http://github.com/Supy/gentry/tarball/master#egg=gentry-0.0.1',
+        'http://github.com/richg/carbon/tarball/0.9.x-warden#egg=carbon-0.9.10-warden',
+        'http://github.com/Supy/Diamond/tarball/master#egg=diamond-x.x-warden'
     ],
     keywords         = 'sentry carbon graphite monitoring',
     url              = 'https://github.com/matthewhampton/warden',
