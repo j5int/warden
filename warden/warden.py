@@ -79,7 +79,7 @@ class Warden:
             log.exception("An error occured during initialisation.")
             sys.exit(1)
 
-    def startup(self):
+    def _startup(self):
         """
         Start the warden instance
         Carbon, Diamond and Gentry are started in order, and this method will only exit once all are bound to their
@@ -111,11 +111,11 @@ class Warden:
         except Exception, e:
             raise StartupException(e)
 
-    def wait_for_start(self, process):
+    def _wait_for_start(self, process):
         while not process.is_active():
             time.sleep(0.5)
 
-    def is_active(self):
+    def _is_active(self):
         """
         A general active state query.
         returns False as soon as anything is not running
@@ -130,7 +130,7 @@ class Warden:
 
         return result
 
-    def shutdown(self):
+    def _shutdown(self):
         """
         Shutdown in order, some threading may be wrong here, make sure of inidividual .join()
         """
@@ -170,10 +170,10 @@ class Warden:
 
     def start(self):
         try:
-            self.startup()
+            self._startup()
             while True:
                 time.sleep(5)
-                if not self.is_active():
+                if not self._is_active():
                     log.error("Something caused one of the services to stop!")
                     break
                 # need some way to pickup errors at runtime. should check after each sleep whether any of the
@@ -181,13 +181,13 @@ class Warden:
 
         except KeyboardInterrupt:
             log.info("Keyboard interrupt received.")
-            self.shutdown()
+            self._shutdown()
         except StartupException:
             log.exception("An error occured during startup.")
-            self.shutdown()
+            self._shutdown()
         except Exception:
             log.exception("An error occured while running.")
-            self.shutdown()
+            self._shutdown()
 
 def main():
     warden = Warden()
