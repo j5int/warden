@@ -11,6 +11,8 @@ class GentryManager:
 
     def __init__(self, gentry_settings_file=None):
 
+        log.debug('Initialising Gentry..')
+
         if gentry_settings_file is None:
             os.environ['DJANGO_SETTINGS_MODULE'] = 'gentry.settings'
         else:

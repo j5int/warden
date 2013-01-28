@@ -54,7 +54,7 @@ class CarbonManager:
             os.environ["GRAPHITE_ROOT"] = some_storage_directory
         """
 
-        log.debug("Initialising Carbon")
+        log.debug("Initialising Carbon..")
 
         # If an overriding graphite_root is provided: set os.environ['GRAPHITE_ROOT']
         if new_graphite_root is not None:
