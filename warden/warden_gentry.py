@@ -51,8 +51,15 @@ class GentryManager:
         if settings.LOG_METRIC_ACCESS:
             self.graphitelog.metricAccessLogger.addHandler(streamHandler)
 
-        self.thread = self.GentryServerThread()
+        dbfile = settings.DATABASES['default']['NAME']
+        #exists
+        try:
+            with open(dbfile) as f: pass
+            management.execute_from_command_line(['manage.py', 'migrate'])
+        except:
+            management.execute_from_command_line(['manage.py', 'syncdb','--noinput'])
 
+        self.thread = self.GentryServerThread()
 
     def start(self):
         self.thread.start()
