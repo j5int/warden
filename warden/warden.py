@@ -89,15 +89,15 @@ class Warden:
         log.info('Starting Warden..')
         try:
             self.carbon.start()
-            self.wait_for_start(self.carbon)
+            self._wait_for_start(self.carbon)
             log.debug('1. Carbon Started')
 
             self.diamond.start()
-            self.wait_for_start(self.diamond)
+            self._wait_for_start(self.diamond)
             log.debug('2. Diamond Started')
 
             self.gentry.start()
-            self.wait_for_start(self.gentry)
+            self._wait_for_start(self.gentry)
             log.debug('3. Gentry Started')
 
             if self.settings.START_SMTP_FORWARDER:
@@ -106,7 +106,7 @@ class Warden:
 
             # blocking
             log.info('Started Warden.')
-            self.startuptime = datetime.datetime.now()
+            self.startuptime = self.shutdowntime = datetime.datetime.now()
 
         except Exception, e:
             raise StartupException(e)

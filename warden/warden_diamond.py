@@ -18,8 +18,7 @@ class DiamondManager:
 
         if diamond_root is not None:
             os.environ['DIAMOND_ROOT'] = diamond_root
-
-        log.debug('$DIAMOND_ROOT=%s' % os.environ['DIAMOND_ROOT'])
+            log.debug('$DIAMOND_ROOT=%s' % os.environ['DIAMOND_ROOT'])
 
         if diamond_conf_file is None:
             raise ValueError('DiamondManager: Path to diamond.conf was not supplied!')
