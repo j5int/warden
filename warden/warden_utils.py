@@ -18,6 +18,7 @@ def normalize_path(path):
     path = os.path.abspath(path)
     return path
 
+
 class StartupException(Exception):
     def __init__(self, m):
         self.message = m

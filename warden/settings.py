@@ -21,6 +21,8 @@ GENTRY_SETTINGS_PATH = None
 # optional path to an overriding sentry secret key
 SENTRY_KEY_FILE = None
 
+SENTRY_SUPER_USER = ('user', 'password', 'email@address.com')
+
 # CARBON
 # ----------------
 # path to graphite root

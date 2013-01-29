@@ -38,6 +38,14 @@ class SMTPForwarderManager:
             self.busy_sending = False
 
 
+        def prettiertime(self, s):
+            if s <60:
+                return '%d seconds' % s
+            if s < 3600:
+                min = s / 60
+                return '%d minutes' % min
+            hour = s / 3600
+            return '%d hours' % hour
 
         def run(self):
             self.running = True
@@ -47,12 +55,12 @@ class SMTPForwarderManager:
             self.SLEEP_TIME = int(self.configuration['send_interval'])
             self.last_poll_time = time.time()
 
+            log.debug('SMTP dispatch will occur in %s' % str(self.prettiertime(self.SLEEP_TIME)))
+
             while self.running:
                 if (time.time()-self.last_poll_time) < self.SLEEP_TIME:
                     time.sleep(1)
                     continue
-
-                self.configuration = self.load_config()
 
                 conn = SMTP()
                 try:
@@ -89,6 +97,12 @@ class SMTPForwarderManager:
                                 log.debug('Sent mail in %d seconds.' % (time.time()-start_time))
 
                     self.last_poll_time = time.time()
+
+                    self.configuration = self.load_config()
+                    self.SLEEP_TIME = int(self.configuration['send_interval'])
+
+                    log.debug('Next SMTP dispatch will occur in %s' % str(self.prettiertime(self.SLEEP_TIME)))
+
                 except smtplib.SMTPRecipientsRefused:
                     log.error('STMPRecipientsRefused')
                 except smtplib.SMTPHeloError:
@@ -103,6 +117,7 @@ class SMTPForwarderManager:
                     # Did it fail to send
                     if time.time() - self.last_poll_time > self.SLEEP_TIME:
                         self.last_poll_time = time.time() + (60 * 10) - self.SLEEP_TIME
+                        log.debug('Next SMTP dispatch will occur in %s' % str(self.prettiertime(60*10)))
 
                     if hasattr(conn, 'sock') and conn.sock:
                         conn.quit()

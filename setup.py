@@ -37,7 +37,7 @@ Finally, there is an API that can be used by the monitored application to publis
     zip_safe = False,
     install_requires = [
           'whisper==0.9.10',
-          'carbon==0.9.10',
+          'carbon==0.9.10-warden',
           'gentry==0.0.1',
           'twisted',
           'graphite-web',

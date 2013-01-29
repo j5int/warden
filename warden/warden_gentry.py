@@ -56,8 +56,12 @@ class GentryManager:
         try:
             with open(dbfile) as f: pass
             management.execute_from_command_line(['manage.py', 'migrate'])
+
+
+
+
         except:
-            management.execute_from_command_line(['manage.py', 'syncdb','--noinput'])
+            raise IOError('Gentry Database was not found at "%s". Please use warden-setup to initialise it.' % dbfile)
 
         self.thread = self.GentryServerThread()
 
