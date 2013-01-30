@@ -8,7 +8,7 @@ loglevel = DEBUG
 [diamond]
 
 # Path to diamond.conf
-configuration = '~/.diamond/etc/diamond/diamond.conf'
+configuration = ~/.diamond/etc/diamond/diamond.conf
 # Logging level of diamond. this produces a lot of logs if set to info/debug
 loglevel = ERROR
 # Path to diamond_root
@@ -26,10 +26,10 @@ super_user = ('user', 'password', 'email@address.com')
 [carbon]
 
 # the path to the carbon config is derived from the GRAPHITE_ROOT unless defined here
-configuration = '~/.graphite/conf/carbon.conf'
+configuration = ~/.graphite/conf/carbon.conf
 
 # path to graphite root
-graphite_root = '~/.graphite'
+graphite_root = ~/.graphite
 
 [smtp_forwarder]
 

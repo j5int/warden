@@ -6,8 +6,6 @@ import time
 from smtplib import SMTP
 from smtp_forwarder import BaseMailGenerator
 from warden_logging import log
-from  smtp_forwarder import GraphiteMailGenerator
-from configobj import ConfigObj
 import ConfigParser
 
 
@@ -112,7 +110,7 @@ class SMTPForwarderManager:
                     log.exception('SMTPSenderRefused')
                 except smtplib.SMTPDataError:
                     log.error('SMTPDataError')
-                except Exception as exc:
+                except Exception:
                     log.exception('An exception occured when sending mail')
                 finally:
                     # Did it fail to send

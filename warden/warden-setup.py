@@ -73,10 +73,10 @@ def setup(
             for line in old_lines:
                 if line.startswith('DATA_ROOT'):
                     nline = 'DATA_ROOT=\'' + str(os.path.dirname(gentry_settings)) + '\'\n'
-                    print 'Rewriting "%s" -> "%s"' % (line.strip(), nline.strip())
+                    log.info( 'Rewriting "%s" -> "%s"' % (line.strip(), nline.strip()))
                 elif line.startswith('SENTRY_KEY'):
                     nline = 'SENTRY_KEY=\'' + str(sentry_key) + '\'\n'
-                    print 'Rewriting "%s" -> "%s"' % (line.strip(), nline.strip())
+                    log.info( 'Rewriting "%s" -> "%s"' % (line.strip(), nline.strip()))
                 else:
                     nline = line
                 new_lines.append(nline)
@@ -86,7 +86,7 @@ def setup(
                 f.writelines(new_lines)
                 f.flush()
                 f.close()
-    except IOError, e:
+    except IOError:
         log.exception('Could not write gentry_settings module: "%s"' % gentry_settings)
 
     if gentry_settings is None:
@@ -113,7 +113,7 @@ def setup(
         email = super_user[2]
     else:
         username, password, email = '', '', ''
-        print('Creating new Superuser for Sentry:')
+        log.info('Creating new Superuser for Sentry:')
         while True:
             username = raw_input('Enter username: ').strip()
             if len(username) == 0 or ' ' in username: continue
@@ -124,7 +124,6 @@ def setup(
             break
 
     from sentry.models import User
-    auser = None
     try:
         auser = User.objects.using('default').get(username=username)
     except User.DoesNotExist:

@@ -102,7 +102,7 @@ class CarbonManager:
 
         log.debug("Started Carbon.")
 
-    def stop(self, remove_pids=True):
+    def stop(self):
         if self.reactor_thread.isAlive():
             log.debug("Stopping Carbon..")
 

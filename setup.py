@@ -14,8 +14,6 @@ def get_version():
 def check_fault_requires():
     pass
 
-
-
 setup(
     name             = 'warden',
     version          = get_version(),
