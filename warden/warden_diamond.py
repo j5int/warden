@@ -17,7 +17,7 @@ class DiamondManager:
         log.debug('Initialising Diamond..')
 
         if diamond_root is not None:
-            os.environ['DIAMOND_ROOT'] = diamond_root
+            os.environ['DIAMOND_ROOT'] = normalize_path(diamond_root)
             log.debug('$DIAMOND_ROOT=%s' % os.environ['DIAMOND_ROOT'])
 
         if diamond_conf_file is None:

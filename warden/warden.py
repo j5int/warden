@@ -56,9 +56,7 @@ class Warden:
         self.startuptime = None
         self.shutdowntime = None
 
-        # pull new config values into settings object
-
-
+        # pull new config values into configuration object
 
         if new_graphite_root is not None:
             self.configuration.set('carbon', 'graphite_root', str(new_graphite_root))

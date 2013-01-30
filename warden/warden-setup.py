@@ -17,10 +17,11 @@ from django.core import management
 
 
 def file_exists(path):
+
     try:
         with open(path) as f:pass
         return True
-    except:
+    except IOError:
         return False
 
 def ensure(
@@ -30,15 +31,19 @@ def ensure(
         super_user = None,
         project_name = None
 ):
-
+    carbon_conf = os.path.abspath(os.path.expanduser(carbon_conf))
     if carbon_conf is not None and not file_exists(carbon_conf):
         log.error('The Carbon configuration "%s" does not exist. Aborting.' % carbon_conf)
         return False
 
+
+    diamond_conf = os.path.abspath(os.path.expanduser(diamond_conf))
     if diamond_conf is not None and not file_exists(diamond_conf):
         log.error('The Diamond configuration "%s" does not exist. Aborting.' % carbon_conf)
         return False
 
+
+    gentry_settings = os.path.abspath(os.path.expanduser(gentry_settings))
     if gentry_settings is not None and not file_exists(gentry_settings):
         log.error('The Gentry settings module "%s" does not exist. Aborting.' % carbon_conf)
         return False
@@ -80,8 +85,9 @@ def setup(
             with open(gentry_settings, 'wb') as f:
                 f.writelines(new_lines)
                 f.flush()
+                f.close()
     except IOError, e:
-        log.exception()
+        log.exception('Could not write gentry_settings module: "%s"' % gentry_settings)
 
     if gentry_settings is None:
         os.environ['DJANGO_SETTINGS_MODULE'] = 'gentry.settings'
