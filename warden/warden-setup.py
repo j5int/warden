@@ -155,10 +155,10 @@ if __name__ == '__main__':
     import argparse
     import ConfigParser
     parser = argparse.ArgumentParser(description='Warden configuration file parser')
-    parser.add_argument('config', action="store", help="Path to the Warden configuration file.")
-    args = parser.parse_args(sys.argv)
-    warden_configuration_file = args.config
+    parser.add_argument('--config', help="Path to the Warden configuration file.", dest='config', required=True)
+    args, unknown  = parser.parse_known_args(sys.argv)
 
+    warden_configuration_file = args.config
     configuration = ConfigParser.RawConfigParser()
     configuration.read(warden_configuration_file)
 

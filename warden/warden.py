@@ -34,8 +34,8 @@ class Warden:
         if __name__ == '__main__':
             import argparse
             parser = argparse.ArgumentParser(description='Warden configuration file parser')
-            parser.add_argument('config', action="store", help="Path to the Warden configuration file.")
-            args = parser.parse_args(sys.argv)
+            parser.add_argument('--config', help="Path to the Warden configuration file.", dest='config', required=True)
+            args, unknown  = parser.parse_known_args(sys.argv)
             warden_configuration_file = args.config
 
         # Otherwise there may be a config argument
