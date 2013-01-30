@@ -1,0 +1,38 @@
+# An example configuration for Warden and its subjects
+
+[warden]
+
+# DEBUG/INFO/WARNING/ERROR/CRITICAL
+loglevel = DEBUG
+
+[diamond]
+
+# Path to diamond.conf
+configuration = '~/.diamond/etc/diamond/diamond.conf'
+# Logging level of diamond. this produces a lot of logs if set to info/debug
+loglevel = ERROR
+# Path to diamond_root
+diamond_root = ~/.diamond
+
+
+[gentry]
+
+# Path to the gentry settings.py file
+gentry_settings_py_path = /usr/local/lib/python2.7/site-packages/gentry/settings.py
+# Sentry super user
+super_user = ('user', 'password', 'email@address.com')
+
+
+[carbon]
+
+# the path to the carbon config is derived from the GRAPHITE_ROOT unless defined here
+configuration = '~/.graphite/conf/carbon.conf'
+
+# path to graphite root
+graphite_root = '~/.graphite'
+
+[smtp_forwarder]
+
+enabled = False
+configuration = None
+

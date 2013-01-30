@@ -127,7 +127,6 @@ def setup(
     else:
         log.error('Username "%s" is already taken.' % username)
 
-
     if project_name is None:
         yesno = raw_input('Would you like to create a new project for Sentry? (yes/no): ' )
         if yesno == 'yes' or yesno == 'y':
@@ -148,17 +147,28 @@ def setup(
             dsn = "http://%s:%s@localhost:%s/%s" % (key.public_key, key.secret_key, gsetts.SENTRY_WEB_PORT, key.project_id)
             log.info('Added "%s" project to Sentry with dsn: %s' % (project_name, dsn))
 
-
-
-
         except Exception:
             log.error('Failed to create project.')
 
 
 if __name__ == '__main__':
-    import settings
-    log.setLevel(settings.STDOUT_LEVEL)
-    ensure(settings.CARBON_CONFIG, settings.DIAMOND_CONFIG, settings.GENTRY_SETTINGS_PATH, None, None)
+    import argparse
+    import ConfigParser
+    parser = argparse.ArgumentParser(description='Warden configuration file parser')
+    parser.add_argument('config', action="store", help="Path to the Warden configuration file.")
+    args = parser.parse_args(sys.argv)
+    warden_configuration_file = args.config
+
+    configuration = ConfigParser.RawConfigParser()
+    configuration.read(warden_configuration_file)
+
+    carbon_conf = configuration.get('carbon','configuration')
+    diamond_conf = configuration.get('diamond','configuration')
+    gentry_settings = configuration.get('gentry', 'gentry_settings_py_path')
+
+    ensure(carbon_conf,diamond_conf,gentry_settings, None, None)
+
+
 
 
 

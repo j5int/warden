@@ -61,6 +61,7 @@ class SMTPForwarderManager:
                 if (time.time()-self.last_poll_time) < self.SLEEP_TIME:
                     time.sleep(1)
                     continue
+                                                    # this overrides the value in the gentry_settings_module
 
                 conn = SMTP()
                 try:

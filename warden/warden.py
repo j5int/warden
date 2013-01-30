@@ -1,5 +1,8 @@
 import sys
+import os
 import time
+import ConfigParser
+import logging
 from warden_carbon import CarbonManager
 from warden_gentry import GentryManager
 from warden_diamond import DiamondManager
@@ -19,61 +22,81 @@ class Warden:
                  carbon_config_path=None,           # where are the carbon config files
                  diamond_config_path=None,          # where is the diamond config file
                  gentry_settings_path=None,         # the name of the gentry settings module
-                 sentry_key_path=None,               # a path to a file containing the sentry private key (?) this
-                                                    # this overrides the value in the gentry_settings_module
                  start_stmp_forwarder=True,
-                 smtp_forwarder_config_path=None
+                 smtp_forwarder_config_path=None,
+                 warden_configuration_file=None
 
     ):
         """
-        Warden uses values from its default settings file UNLESS explicitely defined
-        here in the constructor.
+        Load configuration object
         """
-        import settings
+        # If run as main, there must be a config option
+        if __name__ == '__main__':
+            import argparse
+            parser = argparse.ArgumentParser(description='Warden configuration file parser')
+            parser.add_argument('config', action="store", help="Path to the Warden configuration file.")
+            args = parser.parse_args(sys.argv)
+            warden_configuration_file = args.config
 
-        self.settings = settings
+        # Otherwise there may be a config argument
+        else:
+            if warden_configuration_file is None:
+                log.critical('No Warden configuration file supplied! Please use the "warden_configuration_file" parameter.')
+                sys.exit()
 
-        log.setLevel(self.settings.STDOUT_LEVEL)
+        warden_configuration_file = os.path.abspath(os.path.expanduser(warden_configuration_file))
+
+        self.configuration = ConfigParser.RawConfigParser()
+        self.configuration.read(warden_configuration_file)
+
+        loglevel = getattr(logging, self.configuration.get('warden','loglevel'))
+
+        log.setLevel(loglevel)
 
         self.startuptime = None
         self.shutdowntime = None
 
         # pull new config values into settings object
+
+
+
         if new_graphite_root is not None:
-            self.settings.GRAPHITE_ROOT = new_graphite_root
+            self.configuration.set('carbon', 'graphite_root', str(new_graphite_root))
 
         if carbon_config_path is not None:
-            self.settings.CARBON_CONFIG = carbon_config_path
+            self.configuration.set('carbon', 'configuration', str(carbon_config_path))
 
         if diamond_config_path is not None:
-            self.settings.DIAMOND_CONFIG = diamond_config_path
+            self.configuration.set('diamond', 'configuration', str(diamond_config_path))
 
         if gentry_settings_path is not None:
-            self.settings.GENTRY_SETTINGS_PATH = gentry_settings_path
-
-        if sentry_key_path is not None:
-            self.settings.SENTRY_KEY_FILE = sentry_key_path
+            self.configuration.set('gentry', 'gentry_settings_py_path', str(gentry_settings_path))
 
         if start_stmp_forwarder is False:
-            self.settings.START_SMTP_FORWARDER = False
+            self.configuration.set('smtp_forwarder', 'enabled', str(start_stmp_forwarder))
 
         if smtp_forwarder_config_path is not None:
-            self.settings.SMTP_FORWARDER_CONFIG = smtp_forwarder_config_path
-
+            self.configuration.set('smtp_forwarder', 'configuration', str(smtp_forwarder_config_path))
 
         log.info('Initialising Warden..')
         try:
             # initialise Carbon, daemon services are setup here, but the event reactor is not yet run
-            self.carbon = CarbonManager(self.settings.GRAPHITE_ROOT, self.settings.CARBON_CONFIG)
+            self.carbon = CarbonManager(
+                self.configuration.get('carbon', 'graphite_root'),
+                self.configuration.get('carbon', 'configuration'))
 
             # initialise Gentry, this will also perform database manipulation for Sentry
-            self.gentry = GentryManager(self.settings.GENTRY_SETTINGS_PATH)
+            self.gentry = GentryManager(
+                self.configuration.get('gentry', 'gentry_settings_py_path'))
 
             # initialise Diamond, not much is required here
-            self.diamond = DiamondManager(self.settings.DIAMOND_ROOT, self.settings.DIAMOND_CONFIG, self.settings.DIAMOND_STDOUT_LEVEL)
+            self.diamond = DiamondManager(
+                self.configuration.get('diamond', 'diamond_root'),
+                self.configuration.get('diamond', 'configuration'),
+                getattr(logging, self.configuration.get('diamond','loglevel')))
 
-            if self.settings.START_SMTP_FORWARDER:
-                self.smtpforward = SMTPForwarderManager(self.settings.SMTP_FORWARDER_CONFIG)
+            if self.configuration.getboolean('smtp_forwarder', 'enabled'):
+                self.smtpforward = SMTPForwarderManager(self.configuration.get('smtp_forwarder', 'configuration'))
 
         except Exception:
             log.exception("An error occured during initialisation.")
@@ -100,7 +123,7 @@ class Warden:
             self._wait_for_start(self.gentry)
             log.debug('3. Gentry Started')
 
-            if self.settings.START_SMTP_FORWARDER:
+            if self.configuration.getboolean('smtp_forwarder', 'enabled'):
                 self.smtpforward.start()
                 log.debug('4. Graphite SMTP forwarder Started')
 
@@ -141,7 +164,7 @@ class Warden:
 
         log.info('Shutting down Warden..')
 
-        if self.settings.START_SMTP_FORWARDER:
+        if self.configuration.getboolean('smtp_forwarder', 'enabled'):
             try:
                 self.smtpforward.stop()
                 log.debug('4. Graphite SMTP forwarder stopped')
