@@ -39,13 +39,13 @@ def ensure(
 
     diamond_conf = os.path.abspath(os.path.expanduser(diamond_conf))
     if diamond_conf is not None and not file_exists(diamond_conf):
-        log.error('The Diamond configuration "%s" does not exist. Aborting.' % carbon_conf)
+        log.error('The Diamond configuration "%s" does not exist. Aborting.' % diamond_conf)
         return False
 
 
     gentry_settings = os.path.abspath(os.path.expanduser(gentry_settings))
     if gentry_settings is not None and not file_exists(gentry_settings):
-        log.error('The Gentry settings module "%s" does not exist. Aborting.' % carbon_conf)
+        log.error('The Gentry settings module "%s" does not exist. Aborting.' % gentry_settings)
         return False
 
     return setup(carbon_conf, diamond_conf, gentry_settings, super_user, project_name)
@@ -163,7 +163,7 @@ if __name__ == '__main__':
     parser.add_argument('--config', help="Path to the Warden configuration file.", dest='config', required=True)
     args, unknown  = parser.parse_known_args(sys.argv)
 
-    warden_configuration_file = args.config
+    warden_configuration_file = os.path.abspath(os.path.expanduser(args.config))
     configuration = ConfigParser.RawConfigParser()
     configuration.read(warden_configuration_file)
 
