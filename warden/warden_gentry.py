@@ -28,28 +28,26 @@ class GentryManager:
         import graphite.logger
         self.graphitelog = graphite.logger.log
 
-        formatter = logging.Formatter('[%(asctime)s][%(levelname)s][%(message)s]')
-        streamHandler = logging.StreamHandler(sys.stdout)
-        streamHandler.setFormatter(formatter)
-        streamHandler.setLevel(logging.DEBUG)
 
-        self.graphitelog.infoLogger.addHandler(streamHandler)
+        # FILE HANDLERS STDOUT
+        self.graphitelog.metricAccessLogger.addHandler(self.make_and_return_filehandler('metricAccessLogger', '/home/benm/.graphite/metric_access.log'))
+        self.graphitelog.cacheLogger.addHandler(self.make_and_return_filehandler('cacheLogger', '/home/benm/.graphite/cache.log'))
+        self.graphitelog.renderingLogger.addHandler(self.make_and_return_filehandler('renderingLogger', '/home/benm/.graphite/rendering.log'))
+        self.graphitelog.infoLogger.addHandler(self.make_and_return_filehandler('infoLogger', '/home/benm/.graphite/info.log'))
+        self.graphitelog.exceptionLogger.addHandler(self.make_and_return_filehandler('exceptionLogger', '/home/benm/.graphite/exception.log'))
+
+        # STREAM HANDLERS STDOUT
+        self.graphitelog.metricAccessLogger.addHandler(self.make_and_return_streamhandler('metricAccessLogger'))
+        self.graphitelog.cacheLogger.addHandler(self.make_and_return_streamhandler('cacheLogger'))
+        self.graphitelog.renderingLogger.addHandler(self.make_and_return_streamhandler('renderingLogger'))
+        self.graphitelog.infoLogger.addHandler(self.make_and_return_streamhandler('infoLogger'))
+        self.graphitelog.exceptionLogger.addHandler(self.make_and_return_streamhandler('exceptionLogger'))
+
         self.graphitelog.infoLogger.propagate = False
-
-        self.graphitelog.exceptionLogger.addHandler(streamHandler)
         self.graphitelog.exceptionLogger.propagate = False
-
         self.graphitelog.cacheLogger.propagate = False
-        if settings.LOG_CACHE_PERFORMANCE:
-            self.graphitelog.cacheLogger.addHandler(streamHandler)
-
-        self.graphitelog.renderingLogger.propagate = False
-        if settings.LOG_RENDERING_PERFORMANCE:
-            self.graphitelog.renderingLogger.addHandler(streamHandler)
-
         self.graphitelog.metricAccessLogger.propagate = False
-        if settings.LOG_METRIC_ACCESS:
-            self.graphitelog.metricAccessLogger.addHandler(streamHandler)
+        self.graphitelog.renderingLogger.propagate = False
 
         dbfile = settings.DATABASES['default']['NAME']
         #exists
@@ -80,6 +78,21 @@ class GentryManager:
         if not self.thread.isAlive(): return False
 
         return self.thread.server.ready
+
+
+    def make_and_return_streamhandler(self, name):
+        formatter = logging.Formatter('[%(asctime)s]['+name+'][%(message)s]')
+        streamHandler = logging.StreamHandler(sys.stdout)
+        streamHandler.setFormatter(formatter)
+        streamHandler.setLevel(logging.DEBUG)
+        return streamHandler
+
+    def make_and_return_filehandler(self, name, file):
+        formatter = logging.Formatter('[%(asctime)s]['+name+'][%(message)s]')
+        streamHandler = logging.FileHandler(file)
+        streamHandler.setFormatter(formatter)
+        streamHandler.setLevel(logging.DEBUG)
+        return streamHandler
 
 
     class GentryServerThread(threading.Thread):
