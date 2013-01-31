@@ -28,13 +28,12 @@ class GentryManager:
         import graphite.logger
         self.graphitelog = graphite.logger.log
 
-
         # FILE HANDLERS STDOUT
-        self.graphitelog.metricAccessLogger.addHandler(self.make_and_return_filehandler('metricAccessLogger', '/home/benm/.graphite/metric_access.log'))
-        self.graphitelog.cacheLogger.addHandler(self.make_and_return_filehandler('cacheLogger', '/home/benm/.graphite/cache.log'))
-        self.graphitelog.renderingLogger.addHandler(self.make_and_return_filehandler('renderingLogger', '/home/benm/.graphite/rendering.log'))
-        self.graphitelog.infoLogger.addHandler(self.make_and_return_filehandler('infoLogger', '/home/benm/.graphite/info.log'))
-        self.graphitelog.exceptionLogger.addHandler(self.make_and_return_filehandler('exceptionLogger', '/home/benm/.graphite/exception.log'))
+        self.graphitelog.metricAccessLogger.addHandler(self.make_and_return_filehandler('metricAccessLogger', os.path.expanduser('~/.graphite/metric_access.log')))
+        self.graphitelog.cacheLogger.addHandler(self.make_and_return_filehandler('cacheLogger',  os.path.expanduser('~/.graphite/.graphite/cache.log')))
+        self.graphitelog.renderingLogger.addHandler(self.make_and_return_filehandler('renderingLogger',  os.path.expanduser('~/.graphite/.graphite/rendering.log')))
+        self.graphitelog.infoLogger.addHandler(self.make_and_return_filehandler('infoLogger',  os.path.expanduser('~/.graphite/.graphite/info.log')))
+        self.graphitelog.exceptionLogger.addHandler(self.make_and_return_filehandler('exceptionLogger',  os.path.expanduser('~/.graphite/.graphite/exception.log')))
 
         # STREAM HANDLERS STDOUT
         self.graphitelog.metricAccessLogger.addHandler(self.make_and_return_streamhandler('metricAccessLogger'))
@@ -54,10 +53,6 @@ class GentryManager:
         try:
             with open(dbfile) as f: pass
             management.execute_from_command_line(['manage.py', 'migrate'])
-
-
-
-
         except:
             raise IOError('Gentry Database was not found at "%s". Please use warden-setup to initialise it.' % dbfile)
 

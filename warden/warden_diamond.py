@@ -47,7 +47,7 @@ class DiamondManager:
         streamHandler.setLevel(diamond_stdout_lvl)
 
         # LOG to File
-        fileHandler = logging.FileHandler(diamond_root)
+        fileHandler = logging.FileHandler(os.path.join(diamond_root,'diamond.log'))
         fileHandler.setFormatter(formatter)
         fileHandler.setLevel(logging.DEBUG)
 

@@ -50,7 +50,6 @@ class Warden:
                 sys.exit()
 
             warden_configuration_file = os.path.abspath(os.path.expanduser(warden_configuration_file))
-            warden_configuration_file = os.path.abspath(os.path.expanduser(args.config))
             try:
                 with open(warden_configuration_file) as f: pass
             except IOError:
