@@ -36,7 +36,7 @@ class Warden:
             parser = argparse.ArgumentParser(description='Warden configuration file parser')
             parser.add_argument('--config', help="Path to the Warden configuration file.", dest='config', required=True)
             args, unknown  = parser.parse_known_args(sys.argv)
-            warden_configuration_file = args.config
+            warden_configuration_file = os.path.abspath(os.path.expanduser(args.config))
 
         # Otherwise there may be a config argument
         else:
