@@ -72,7 +72,7 @@ def setup(
             old_lines = f.readlines()
             for line in old_lines:
                 if line.startswith('DATA_ROOT'):
-                    nline = 'DATA_ROOT=\'' + str(os.path.dirname(gentry_settings)) + '\'\n'
+                    nline = 'DATA_ROOT=\'' + str('~/.gentry') + '\'\n'
                     log.info( 'Rewriting "%s" -> "%s"' % (line.strip(), nline.strip()))
                 elif line.startswith('SENTRY_KEY'):
                     nline = 'SENTRY_KEY=\'' + str(sentry_key) + '\'\n'
