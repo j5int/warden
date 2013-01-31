@@ -90,6 +90,23 @@ class CarbonManager:
         config.parseOptions(twistd_options)
         config.subCommand = 'carbon-combined'
 
+        # Hacky stuff to get carbon logging to the proper place
+        from carbon.conf import settings as c_sett
+        from carbon import log as c_log
+
+        log_dir = os.path.join(os.environ['GRAPHITE_ROOT'], 'storage', 'log','carbon')
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+
+        c_log.logToStdout()
+        c_log.logToDir(log_dir)
+
+        # Change these if you want big logs
+        c_sett.LOG_UPDATES = False
+        c_sett.LOG_CACHE_HITS = True
+
+
+
         plg = config.loadedPlugins[config.subCommand]
         self.application_service = plg.makeService(config.subOptions)
 

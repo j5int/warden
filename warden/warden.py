@@ -37,6 +37,11 @@ class Warden:
             parser.add_argument('--config', help="Path to the Warden configuration file.", dest='config', required=True)
             args, unknown  = parser.parse_known_args(sys.argv)
             warden_configuration_file = os.path.abspath(os.path.expanduser(args.config))
+            try:
+                with open(warden_configuration_file) as f: pass
+            except IOError:
+                log.error('"%s" Does Not Exist!' % warden_configuration_file)
+                sys.exit(1)
 
         # Otherwise there may be a config argument
         else:
@@ -44,13 +49,20 @@ class Warden:
                 log.critical('No Warden configuration file supplied! Please use the "warden_configuration_file" parameter.')
                 sys.exit()
 
-        warden_configuration_file = os.path.abspath(os.path.expanduser(warden_configuration_file))
+            warden_configuration_file = os.path.abspath(os.path.expanduser(warden_configuration_file))
+            warden_configuration_file = os.path.abspath(os.path.expanduser(args.config))
+            try:
+                with open(warden_configuration_file) as f: pass
+            except IOError:
+                log.error('"%s" Does Not Exist!' % warden_configuration_file)
+                raise
 
         self.configuration = ConfigParser.RawConfigParser()
         self.configuration.read(warden_configuration_file)
 
+        # Setup logger
+        # this is the stdout log level
         loglevel = getattr(logging, self.configuration.get('warden','loglevel'))
-
         log.setLevel(loglevel)
 
         self.startuptime = None

@@ -17,7 +17,8 @@ class DiamondManager:
         log.debug('Initialising Diamond..')
 
         if diamond_root is not None:
-            os.environ['DIAMOND_ROOT'] = normalize_path(diamond_root)
+            diamond_root = normalize_path(diamond_root)
+            os.environ['DIAMOND_ROOT'] = diamond_root
             log.debug('$DIAMOND_ROOT=%s' % os.environ['DIAMOND_ROOT'])
 
         if diamond_conf_file is None:
@@ -36,15 +37,22 @@ class DiamondManager:
             diamond_stdout_lvl = logging.ERROR
 
         self.log_diamond = logging.getLogger('diamond')
-        self.log_diamond.setLevel(diamond_stdout_lvl)
+        self.log_diamond.setLevel(logging.DEBUG)
         self.log_diamond.propagate = False
 
-#       LOG to STDOUT
+        #       LOG to STDOUT
         formatter = logging.Formatter('[%(asctime)s][%(levelname)s][%(message)s]')
         streamHandler = logging.StreamHandler(sys.stdout)
         streamHandler.setFormatter(formatter)
         streamHandler.setLevel(diamond_stdout_lvl)
+
+        # LOG to File
+        fileHandler = logging.FileHandler(diamond_root)
+        fileHandler.setFormatter(formatter)
+        fileHandler.setLevel(logging.DEBUG)
+
         self.log_diamond.addHandler(streamHandler)
+        self.log_diamond.addHandler(fileHandler)
         self.log_diamond.disabled = False
 
     def start(self):

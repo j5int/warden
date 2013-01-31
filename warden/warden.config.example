@@ -19,8 +19,11 @@ diamond_root = ~/.diamond
 
 # Path to the gentry settings.py file
 gentry_settings_py_path = /usr/local/lib/python2.7/site-packages/gentry/settings.py
-# Sentry super user
-super_user = ('user', 'password', 'email@address.com')
+
+# Sentry super user, added to the database during warden-setup time
+super_user      = 'user'
+super_password  = 'password'
+super_email     = 'email@address.com'
 
 
 [carbon]
