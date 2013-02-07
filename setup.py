@@ -23,13 +23,10 @@ setup(
 """
 Warden is a Python application that monitors other Python applications running locally, and ships events to a Sentry instance and metrics to a Graphite instance.
 
-Warden can tail log files, watch that processes are running, ping an HTTP url, and track memory and CPU usage.
-
-It provides a plug-in architecture allowing custom checks to be implemented.
-
-Finally, there is an API that can be used by the monitored application to publish events, and do some internal checks (e.g. for stuck threads).
+Warden uses Diamond to collect stats. Using Diamond's plug-in Collectors architecture, many stats can be collected and custom Collectors added.
 """,
-    author           = 'Matthew Hampton',
+#Finally, there is an API that can be used by the monitored application to publish events, and do some internal checks (e.g. for stuck threads).
+    author           = 'Richard Graham',
     author_email     = 'support@sjsoft.com',
     packages         = ['warden', 'warden.smtp_forwarder'],
     zip_safe = False,
@@ -38,12 +35,12 @@ Finally, there is an API that can be used by the monitored application to publis
           'gentry==0.0.1',
           'diamond'],
     dependency_links = [
-        'http://github.com/Supy/gentry/tarball/master#egg=gentry-0.0.1',
+        'http://github.com/richg/gentry/tarball/master#egg=gentry-0.0.1',
         'http://github.com/richg/carbon/tarball/0.9.x-warden#egg=carbon-0.9.10-warden',
-        #'http://github.com/Supy/Diamond/tarball/master#egg=diamond-x.x-warden'
+        'http://github.com/richg/Diamond/tarball/master#egg=diamond'
     ],
     keywords         = 'sentry carbon graphite monitoring',
-    url              = 'https://github.com/matthewhampton/warden',
+    url              = 'https://github.com/richg/warden',
     entry_points     = {
           'console_scripts': [
               'warden = warden.warden:main',
@@ -51,7 +48,7 @@ Finally, there is an API that can be used by the monitored application to publis
           ]
     },
     classifiers      = [
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Environment :: Web Environment',
