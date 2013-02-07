@@ -150,8 +150,7 @@ def setup(
         except Exception:
             log.error('Failed to create project.')
 
-
-if __name__ == '__main__':
+def main():
     import argparse
     import ConfigParser
     parser = argparse.ArgumentParser(description='Warden configuration file parser')
@@ -182,7 +181,5 @@ if __name__ == '__main__':
 
     ensure(carbon_conf,diamond_conf,gentry_settings, suser, None)
 
-
-
-
-
+if __name__ == '__main__':
+    main()

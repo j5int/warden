@@ -12,11 +12,9 @@ class BaseMailGenerator(object):
     def __init__(self):
         pass
 
-    def get_mail_list(self):
+    def generate_mails(self):
+        """Generate a list of mails to be sent by the SMTPForwarder"""
         return []
-
-    def create_mail(self):
-        pass
 
     def create_attachment(self, path, name):
         ctype = 'application/octet-stream'

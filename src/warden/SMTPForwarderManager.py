@@ -76,9 +76,8 @@ class SMTPForwarderManager:
 
                     for generator_cls in BaseMailGenerator.generator_registry:
                         generator = generator_cls(self.configuration, max_mail_size)
-                        mails = generator.get_mail_list()
 
-                        for mail in mails:
+                        for mail in generator.generate_mails():
                             if mail:
 
                                 bytes = len(mail.as_string())

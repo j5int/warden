@@ -16,8 +16,7 @@ class GraphiteMailGenerator(BaseMailGenerator.BaseMailGenerator):
         # Mails must be 10MB or less
         self.max_mail_size = min(max_mail_size, (1024 * 1024 * 10))
 
-
-    def get_mail_list(self):
+    def generate_mails(self):
         if not self.configuration['email_to'] or self.configuration['email_to'] == '':
             log.error('No receiver email address defined.')
             return []
@@ -60,7 +59,6 @@ class GraphiteMailGenerator(BaseMailGenerator.BaseMailGenerator):
         for possible_file in self._walk_directory(path):
             for pattern in self.configuration['metric_patterns_to_send']:
                 if re.match(pattern, possible_file) is not None:
-                    #log.debug('Found match: ' + possible_file)
                     yield possible_file
                     break
 

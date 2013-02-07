@@ -29,11 +29,11 @@ class GentryManager:
         self.graphitelog = graphite.logger.log
 
         # FILE HANDLERS STDOUT
-        self.graphitelog.metricAccessLogger.addHandler(self.make_and_return_filehandler('metricAccessLogger', os.path.expanduser('~/.graphite/metric_access.log')))
-        self.graphitelog.cacheLogger.addHandler(self.make_and_return_filehandler('cacheLogger',  os.path.expanduser('~/.graphite/.graphite/cache.log')))
-        self.graphitelog.renderingLogger.addHandler(self.make_and_return_filehandler('renderingLogger',  os.path.expanduser('~/.graphite/.graphite/rendering.log')))
-        self.graphitelog.infoLogger.addHandler(self.make_and_return_filehandler('infoLogger',  os.path.expanduser('~/.graphite/.graphite/info.log')))
-        self.graphitelog.exceptionLogger.addHandler(self.make_and_return_filehandler('exceptionLogger',  os.path.expanduser('~/.graphite/.graphite/exception.log')))
+        self.graphitelog.metricAccessLogger.addHandler(self.make_and_return_filehandler('metricAccessLogger', os.path.expanduser('~/.graphite/log/metric_access.log')))
+        self.graphitelog.cacheLogger.addHandler(self.make_and_return_filehandler('cacheLogger',  os.path.expanduser('~/.graphite/log/cache.log')))
+        self.graphitelog.renderingLogger.addHandler(self.make_and_return_filehandler('renderingLogger',  os.path.expanduser('~/.graphite/log/rendering.log')))
+        self.graphitelog.infoLogger.addHandler(self.make_and_return_filehandler('infoLogger',  os.path.expanduser('~/.graphite/log/info.log')))
+        self.graphitelog.exceptionLogger.addHandler(self.make_and_return_filehandler('exceptionLogger',  os.path.expanduser('~/.graphite/log/exception.log')))
 
         # STREAM HANDLERS STDOUT
         self.graphitelog.metricAccessLogger.addHandler(self.make_and_return_streamhandler('metricAccessLogger'))
@@ -82,9 +82,12 @@ class GentryManager:
         streamHandler.setLevel(logging.DEBUG)
         return streamHandler
 
-    def make_and_return_filehandler(self, name, file):
+    def make_and_return_filehandler(self, name, filename):
+        file_dir = os.path.dirname(filename)
+        if not os.path.exists(file_dir):
+            os.mkdir(file_dir)
         formatter = logging.Formatter('[%(asctime)s]['+name+'][%(message)s]')
-        streamHandler = logging.FileHandler(file)
+        streamHandler = logging.FileHandler(filename)
         streamHandler.setFormatter(formatter)
         streamHandler.setLevel(logging.DEBUG)
         return streamHandler

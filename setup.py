@@ -1,8 +1,9 @@
 from setuptools import setup
 import re
+from glob import glob
 
 def get_version():
-    VERSIONFILE="warden/__init__.py"
+    VERSIONFILE="src/warden/__init__.py"
     initfile_lines = open(VERSIONFILE, "rt").readlines()
     VSRE = r"^__version__ = ['\"]([^'\"]*)['\"]"
     for line in initfile_lines:
@@ -25,10 +26,11 @@ Warden is a Python application that monitors other Python applications running l
 
 Warden uses Diamond to collect stats. Using Diamond's plug-in Collectors architecture, many stats can be collected and custom Collectors added.
 """,
-#Finally, there is an API that can be used by the monitored application to publish events, and do some internal checks (e.g. for stuck threads).
     author           = 'Richard Graham',
     author_email     = 'support@sjsoft.com',
     packages         = ['warden', 'warden.smtp_forwarder'],
+    package_dir={'' : 'src'},
+    data_files=[ ('conf', glob('conf/*.example')) ],
     zip_safe = False,
     install_requires = [
           'carbon==0.9.10-warden',
@@ -43,7 +45,7 @@ Warden uses Diamond to collect stats. Using Diamond's plug-in Collectors archite
     url              = 'https://github.com/richg/warden',
     entry_points     = {
           'console_scripts': [
-              'warden = warden.warden:main',
+              'warden = warden.WardenServer:main',
               'warden_setup = warden.warden_setup:main'
           ]
     },

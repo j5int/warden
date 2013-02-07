@@ -3,58 +3,45 @@ import os
 import time
 import ConfigParser
 import logging
-from warden_carbon import CarbonManager
-from warden_gentry import GentryManager
-from warden_diamond import DiamondManager
-from warden_smtp_forwarder import SMTPForwarderManager
+from CarbonManager import CarbonManager
+from GentryManager import GentryManager
+from DiamondManager import DiamondManager
+from SMTPForwarderManager import SMTPForwarderManager
 from warden_logging import log
 from warden_utils import StartupException
 import datetime
 
-class Warden:
+class WardenServer(object):
     """
     Warden is a solution for controlling Carbon daemons, Sentry, Graphite-web and Diamond all within a single process.
     The sub systems all run in separate threads and can be shutdown gracefully using sigint or stop commands.
     """
-
+    
     def __init__(self,
+                 warden_configuration_file,
                  new_graphite_root=None,            # does the graphite root variable need to be changed
                  carbon_config_path=None,           # where are the carbon config files
                  diamond_config_path=None,          # where is the diamond config file
                  gentry_settings_path=None,         # the name of the gentry settings module
                  start_stmp_forwarder=True,
                  smtp_forwarder_config_path=None,
-                 warden_configuration_file=None
-
     ):
         """
         Load configuration object
         """
-        # If run as main, there must be a config option
-        if __name__ == '__main__':
-            import argparse
-            parser = argparse.ArgumentParser(description='Warden configuration file parser')
-            parser.add_argument('--config', help="Path to the Warden configuration file.", dest='config', required=True)
-            args, unknown  = parser.parse_known_args(sys.argv)
-            warden_configuration_file = os.path.abspath(os.path.expanduser(args.config))
-            try:
-                with open(warden_configuration_file) as f: pass
-            except IOError:
-                log.error('"%s" Does Not Exist!' % warden_configuration_file)
-                sys.exit(1)
 
         # Otherwise there may be a config argument
-        else:
-            if warden_configuration_file is None:
-                log.critical('No Warden configuration file supplied! Please use the "warden_configuration_file" parameter.')
-                sys.exit()
+       
+        if warden_configuration_file is None:
+            log.critical('No Warden configuration file supplied! Please use the "warden_configuration_file" parameter.')
+            sys.exit()
 
-            warden_configuration_file = os.path.abspath(os.path.expanduser(warden_configuration_file))
-            try:
-                with open(warden_configuration_file) as f: pass
-            except IOError:
-                log.error('"%s" Does Not Exist!' % warden_configuration_file)
-                raise
+        warden_configuration_file = os.path.abspath(os.path.expanduser(warden_configuration_file))
+        try:
+            with open(warden_configuration_file) as f: pass
+        except IOError:
+            log.error('The warden config file specified ("%s") does not exist!' % warden_configuration_file)
+            raise
 
         self.configuration = ConfigParser.RawConfigParser()
         self.configuration.read(warden_configuration_file)
@@ -122,19 +109,19 @@ class Warden:
         try:
             self.carbon.start()
             self._wait_for_start(self.carbon)
-            log.debug('1. Carbon Started')
+            log.info('1. Carbon Started')
 
             self.diamond.start()
             self._wait_for_start(self.diamond)
-            log.debug('2. Diamond Started')
+            log.info('2. Diamond Started')
 
             self.gentry.start()
             self._wait_for_start(self.gentry)
-            log.debug('3. Gentry Started')
+            log.info('3. Gentry Started')
 
             if self.configuration.getboolean('smtp_forwarder', 'enabled'):
                 self.smtpforward.start()
-                log.debug('4. Graphite SMTP forwarder Started')
+                log.info('4. Graphite SMTP forwarder Started')
 
             # blocking
             log.info('Started Warden.')
@@ -152,15 +139,7 @@ class Warden:
         A general active state query.
         returns False as soon as anything is not running
         """
-        result = self.gentry.is_active()
-
-        if result:
-            result = self.carbon.is_active()
-
-        if result:
-            result = self.diamond.is_active()
-
-        return result
+        return self.gentry.is_active() and self.carbon.is_active() and self.diamond.is_active()
 
     def _shutdown(self):
         """
@@ -176,25 +155,25 @@ class Warden:
         if self.configuration.getboolean('smtp_forwarder', 'enabled'):
             try:
                 self.smtpforward.stop()
-                log.debug('4. Graphite SMTP forwarder stopped')
+                log.info('4. Graphite SMTP forwarder stopped')
             except Exception:
                 log.exception('An error occured while shutting down Graphite SMTP forwarder')
 
         try:
             self.gentry.stop()
-            log.debug('3. Gentry Stopped.')
+            log.info('3. Gentry Stopped.')
         except Exception:
             log.exception("An error occured while shutting down Gentry")
 
         try:
             self.diamond.stop()
-            log.debug('2. Diamond Stopped.')
+            log.info('2. Diamond Stopped.')
         except Exception:
             log.exception("An error occured while shutting down Diamond")
 
         try:
             self.carbon.stop()
-            log.debug('1. Carbon Stopped.')
+            log.info('1. Carbon Stopped.')
         except Exception:
             log.exception("An error occured while shutting down Carbon")
 
@@ -222,10 +201,18 @@ class Warden:
             self._shutdown()
 
 def main():
-    warden = Warden()
-
-    warden.start()
-
+    import argparse
+    parser = argparse.ArgumentParser(description='Warden configuration file parser')
+    parser.add_argument('--config', help="Path to the Warden configuration file.", dest='config', required=True)
+    args, unknown  = parser.parse_known_args(sys.argv)
+    warden_configuration_file = os.path.abspath(os.path.expanduser(args.config))
+    try:
+        with open(warden_configuration_file) as f: pass
+    except IOError:
+        log.error('The warden config file specified ("%s") does not exist!' % warden_configuration_file)
+        sys.exit(1)
+    warden_server = WardenServer(warden_configuration_file = warden_configuration_file)
+    warden_server.start()
 
 if __name__ == '__main__':
     main()
