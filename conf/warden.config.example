@@ -24,7 +24,7 @@ gentry_settings_py_path = /usr/local/lib/python2.7/site-packages/gentry/settings
 super_user      = 'user'
 super_password  = 'password'
 super_email     = 'email@address.com'
-
+project         = 'myproject'
 
 [carbon]
 
