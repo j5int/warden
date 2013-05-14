@@ -178,8 +178,12 @@ def main():
             configuration.get('gentry', 'super_email'))
     except:
         suser = None
+    try:
+        project = configuration.get('gentry', 'project')
+    except:
+        project = None
 
-    ensure(carbon_conf,diamond_conf,gentry_settings, suser, None)
+    ensure(carbon_conf,diamond_conf,gentry_settings, suser, project)
 
 if __name__ == '__main__':
     main()

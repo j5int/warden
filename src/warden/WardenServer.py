@@ -1,8 +1,11 @@
 import sys
 import os
+import signal
 import time
 import ConfigParser
 import logging
+import daemon
+from lockfile import pidlockfile
 from CarbonManager import CarbonManager
 from GentryManager import GentryManager
 from DiamondManager import DiamondManager
@@ -92,7 +95,7 @@ class WardenServer(object):
                 getattr(logging, self.configuration.get('diamond','loglevel')))
 
             if self.configuration.getboolean('smtp_forwarder', 'enabled'):
-                self.smtpforward = SMTPForwarderManager(self.configuration.get('smtp_forwarder', 'configuration'))
+                self.smtpforward = SMTPForwarderManager(dict(self.configuration.items('smtp_forwarder')))
 
         except Exception:
             log.exception("An error occured during initialisation.")
@@ -203,14 +206,49 @@ class WardenServer(object):
 def main():
     import argparse
     parser = argparse.ArgumentParser(description='Warden configuration file parser')
-    parser.add_argument('--config', help="Path to the Warden configuration file.", dest='config', required=True)
+    parser.add_argument('--config', help="Path to the Warden configuration file.", dest='config')
+    parser.add_argument('--pid-file', help="PID file for Daemon mode.  This causes Warden to run in Daemon mode", dest='pid_file')
+    parser.add_argument('--stop', help='Stop Warden running in Daemon mode', action='store_true', default=False)
     args, unknown  = parser.parse_known_args(sys.argv)
+    if not args.config and not args.stop:
+        log.error('Warden not being stopped, and no config file specified - aborting')
+        sys.exit(1)
+    if args.stop and not args.pid_file:
+        log.error('Warden cannot stop daemon mode unless the pid-file is specified')
+        sys.exit(1)
+    if args.stop:
+        pid_file = os.path.abspath(os.path.expanduser(args.pid_file))
+        if not os.path.exists(pid_file):
+            log.error('Warden cannot find pid-file %s',pid_file)
+            sys.exit(1)
+        pid = int(open(pid_file, 'r').readline())
+        log.info('Killing pid %d', pid)
+        os.kill(pid, signal.SIGINT)
+        # Check if we've managed for 10 seconds
+        for i in range(10):
+            try:
+                os.kill(pid, 0)
+                log.info('Waiting for %d to die', pid)
+            except OSError:
+                log.info('Stop complete')
+                return
+            time.sleep(1)
+        log.warning("Could not end warden process - killing manually")
+        os.kill(pid, signal.SIGHUP)
+        if os.path.exists(pid_file):
+            os.remove(pid_file)
+        return
     warden_configuration_file = os.path.abspath(os.path.expanduser(args.config))
-    try:
-        with open(warden_configuration_file) as f: pass
-    except IOError:
+    if not os.path.exists(warden_configuration_file):
         log.error('The warden config file specified ("%s") does not exist!' % warden_configuration_file)
         sys.exit(1)
+    if args.pid_file:
+        pid_file = os.path.abspath(os.path.expanduser(args.pid_file))
+        context = daemon.DaemonContext(pidfile=pidlockfile.PIDLockFile(pid_file))
+        with context:
+            warden_server = WardenServer(warden_configuration_file = warden_configuration_file)
+            warden_server.start()
+        return
     warden_server = WardenServer(warden_configuration_file = warden_configuration_file)
     warden_server.start()
 

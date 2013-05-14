@@ -29,11 +29,19 @@ class SMTPForwarderManager:
 
     class CentralDispatcherThread(threading.Thread):
 
-        def __init__(self, config_file):
+        def __init__(self, config):
             threading.Thread.__init__(self)
             self.running = False
-            self.config_file = config_file
+            self.config = config
             self.busy_sending = False
+            patternsstring = self.config['metric_patterns_to_send']
+            patterns = patternsstring.split(',')
+            compiled_patterns = []
+            for pattern in patterns:
+                if len(pattern.strip())>0:
+                    compiled_patterns.append(self.compile_metric_pattern(pattern.strip()))
+
+            self.config['metric_patterns_to_send'] = compiled_patterns
 
 
         def prettiertime(self, s):
@@ -48,9 +56,7 @@ class SMTPForwarderManager:
         def run(self):
             self.running = True
 
-            self.configuration = self.load_config()
-
-            self.SLEEP_TIME = int(self.configuration['send_interval'])
+            self.SLEEP_TIME = int(self.config['send_interval'])
             self.last_poll_time = time.time()
 
             log.debug('SMTP dispatch will occur in %s' % str(self.prettiertime(self.SLEEP_TIME)))
@@ -64,18 +70,18 @@ class SMTPForwarderManager:
                 conn = SMTP()
                 try:
                     log.debug('Connecting...')
-                    conn.connect(self.configuration['email_host'])
+                    conn.connect(self.config['email_host'])
                     conn.set_debuglevel(False)
 
-                    if self.configuration['email_use_tls']:
+                    if self.config['email_use_tls']:
                         conn.starttls()
 
                     log.debug('Logging in..')
-                    conn.login(self.configuration['email_username'], self.configuration['email_password'])
+                    conn.login(self.config['email_username'], self.config['email_password'])
                     max_mail_size = int(conn.esmtp_features['size'])
 
                     for generator_cls in BaseMailGenerator.generator_registry:
-                        generator = generator_cls(self.configuration, max_mail_size)
+                        generator = generator_cls(self.config, max_mail_size)
 
                         for mail in generator.generate_mails():
                             if mail:
@@ -96,8 +102,7 @@ class SMTPForwarderManager:
 
                     self.last_poll_time = time.time()
 
-                    self.configuration = self.load_config()
-                    self.SLEEP_TIME = int(self.configuration['send_interval'])
+                    self.SLEEP_TIME = int(self.config['send_interval'])
 
                     log.debug('Next SMTP dispatch will occur in %s' % str(self.prettiertime(self.SLEEP_TIME)))
 
@@ -132,22 +137,3 @@ class SMTPForwarderManager:
 
                 return re.compile(p)
 
-        def load_config(self):
-            self.cfg = ConfigParser.RawConfigParser()
-            self.cfg.read(self.config_file)
-
-            self.configuration = {}
-            for section in self.cfg.sections():
-                for option in self.cfg.options(section):
-                    self.configuration[option] = self.cfg.get(section, option)
-
-            patternsstring = self.configuration['metric_patterns_to_send']
-            patterns = patternsstring.split(',')
-            compiled_patterns = []
-            for pattern in patterns:
-                if len(pattern.strip())>0:
-                    compiled_patterns.append(self.compile_metric_pattern(pattern.strip()))
-
-            self.configuration['metric_patterns_to_send'] = compiled_patterns
-
-            return self.configuration
