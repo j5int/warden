@@ -37,5 +37,23 @@ graphite_root = ~/.graphite
 [smtp_forwarder]
 
 enabled = False
-configuration = None
+# IMAP host
+email_host = mail.sjsoft.com
+# Use TLS?
+email_use_tls = False
+# Auth details
+email_username = xxxxxxxx
+email_password = yyyyyyyy
+# Metric receiver
+email_to = metrics@sjsoft.com
+# Sender
+email_from = metric_client@sjsoft.com
+# Validation keys
+email_subject_validation_key = j5_parsable
+email_body_validation_key = CARBON_FILE_MAIL
+# Send every 30 minutes
+send_interval = 1800
+
+# METRICS TO SEND
+metric_patterns_to_send = .*.memUsage, combined.*.cpuUsage
 

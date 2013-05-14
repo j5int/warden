@@ -95,7 +95,7 @@ class WardenServer(object):
                 getattr(logging, self.configuration.get('diamond','loglevel')))
 
             if self.configuration.getboolean('smtp_forwarder', 'enabled'):
-                self.smtpforward = SMTPForwarderManager(self.configuration.get('smtp_forwarder', 'configuration'))
+                self.smtpforward = SMTPForwarderManager(dict(self.configuration.items('smtp_forwarder')))
 
         except Exception:
             log.exception("An error occured during initialisation.")
