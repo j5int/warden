@@ -6,10 +6,12 @@ import os
 import email
 import json
 import string
+import sys
 from datetime import datetime
 import dateutil.parser
 from imaplib import IMAP4_SSL, IMAP4
 from warden.warden_logging import log
+import ConfigParser
 
 class SentryEmailProcessor(object):
     NAME = "sentry"
@@ -18,7 +20,7 @@ class SentryEmailProcessor(object):
     def __init__(self, config):
         self.client = Client(config['sentry_dsn'])
         self.validation_key = config['email_body_validation_key']
-    
+
     def process(self, message):
         """Takes a mail message, parses the relevant part, and sends the parsed
         data to Sentry using the Raven client.
@@ -68,7 +70,7 @@ class CarbonEmailProcessor(object):
 
     def __init__(self, config):
         self.config = config
-    
+
     def process(self, message):
         """Takes a mail message with one or more attachments and stores the attachments
         in a directory specified by config['whispher_storage_path']
@@ -123,6 +125,7 @@ class CarbonEmailProcessor(object):
 
 class IMAPReceiver(object):
     def __init__(self, config):
+        self.config = config
         if config.get('email', 'use_ssl'):
             self.imap4 = IMAP4_SSL
         else:
@@ -187,5 +190,22 @@ class IMAPReceiver(object):
             else:
                 log.info("No new messages.")
 
-rec = IMAPReceiver()
-rec.start()
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(description='Warden IMAPReceiver configuration file parser')
+    parser.add_argument('--config', help="Path to the Warden IMAPReceiver configuration file.", dest='config')
+    parser.add_argument('--server', help='Run continually in server mode (default is to run once)', action='store_true', default=False)
+    args, unknown  = parser.parse_known_args(sys.argv)
+    imapreceiver_configuration_file = os.path.abspath(os.path.expanduser(args.config))
+    if not os.path.exists(imapreceiver_configuration_file):
+        log.error('The IMAPReceiver config file specified ("%s") does not exist!' % imapreceiver_configuration_file)
+        sys.exit(1)
+    config = ConfigParser.SafeConfigParser()
+    config.read(imapreceiver_configuration_file)
+    imapreceiver = IMAPReceiver(config)
+    if args.server:
+        imapreceiver.start()
+    else:
+        imapreceiver.connect_to_mailbox()
+        imapreceiver.check_mails()
+
