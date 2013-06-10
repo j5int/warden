@@ -1,0 +1,20 @@
+# Example config for the IMAPReceiver
+
+[daemon]
+# Check every 3 minutes
+recheck_delay = 180
+
+[email]
+use_ssl = True
+email_host = 'mail.sjsoft.com'
+email_username = 'metrics'
+email_password = 'xxxxxxx'
+
+[carbon]
+email_body_validation_key = CARBON_FILE_MAIL
+whisper_storage_path = /path/to/whisper/storage
+
+[sentry]
+email_body_validation_key = SENTRY_MSG_MAIL
+sentry_dsn = 'xxxxxx:xxxxx@localhost:9000/2'
+
